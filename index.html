@@ -1162,35 +1162,15 @@
       set('radar-posted', state.radar.postedWithin || '24h');
       updateWorkModePills();
     };
-    function updateWorkModePills() {
-      radar: {
-        role: 'Business Development Executive',
-        country: 'India',
-        city: 'Delhi NCR',
-        workMode: 'all',
-        jobType: 'all',
-        postedWithin: '24h',
-        checkedDate: todayISO(),
-        checkedApps: {}
-      }
-    };
-
-    // ---- 12-App Radar + Global/Remote Filters + Live Feed ----
-    function populateRadarInputs() {
-      const set = (id, v) => {
-        const el = document.getElementById(id);
-        if (el) el.value = v;
-      };
-
-      set('radar-role', state.radar.role || getActiveRoleObj().name);
-      set('radar-country', state.radar.country || 'India');
-      set('radar-city', state.radar.city || '');
-      set('radar-jobtype', state.radar.jobType || 'all');
-      set('radar-posted', state.radar.postedWithin || '24h');
-
-      updateWorkModePills();
-    }
-
+   function updateWorkModePills() {
+  const activeMode = (state.radar && state.radar.workMode) || 'all';
+  document.querySelectorAll('[data-workmode]').forEach((btn) => {
+    const isMatch = btn.getAttribute('data-workmode') === activeMode;
+    btn.classList.toggle('bg-indigo-600', isMatch);
+    btn.classList.toggle('text-white', isMatch);
+    btn.classList.toggle('border-indigo-600', isMatch);
+  });
+}
     function updateWorkModePills() {
 
     function setRadarWorkMode(mode) {
