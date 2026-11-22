@@ -1150,7 +1150,8 @@
         postedWithin: '24h',
         checkedDate: todayISO(),
         checkedApps: {}
-      };
+      },
+      }; // closes the parent object (e.g., state)
     // ---- 12-App Radar + Global/Remote Filters + Live Feed ----
     function populateRadarInputs() {
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
@@ -1161,7 +1162,6 @@
       set('radar-posted', state.radar.postedWithin || '24h');
       updateWorkModePills();
     };
-
     function updateWorkModePills() {
       radar: {
         role: 'Business Development Executive',
