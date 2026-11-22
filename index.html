@@ -128,6 +128,14 @@
             <span>☁️</span>
             <span id="cloud-btn-label">Cloud Sync</span>
           </button>
+
+          <button type="button" onclick="exportBackupJSON()" title="Export JSON Backup" class="hidden sm:inline-flex items-center px-2.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition cursor-pointer">
+            💾
+          </button>
+          <label title="Restore JSON Backup" class="hidden sm:inline-flex items-center px-2.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition cursor-pointer">
+            📂
+            <input type="file" accept=".json" class="hidden" onchange="importBackupJSON(event)" />
+          </label>
         </div>
       </div>
 
@@ -565,44 +573,113 @@
 
         <!-- SUB 2: 12-APP LIVE JOB RADAR -->
         <div id="jobs-sub-radar" class="jobs-subpanel hidden space-y-6">
-          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 class="text-sm font-extrabold text-slate-900">12-App Live Job Launcher (Last 24 Hours)</h3>
-                <p class="text-xs text-slate-500">Pre-filtered for your active role &amp; preferred Indian city.</p>
+                <h3 class="text-sm font-extrabold text-slate-900">12-App Live Job Radar &amp; Global Filters</h3>
+                <p class="text-xs text-slate-500">Filter by Country, City, Remote/Hybrid/On-site, Job Type &amp; Freshness — updates all 12 portals &amp; live feed instantly.</p>
               </div>
               <span id="apps-scanned-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">0/12 Apps Scanned Today</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input type="text" id="radar-role" oninput="saveRadarInputs()" placeholder="Target Role" class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold" />
-              <select id="radar-city" onchange="saveRadarInputs()" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold">
-                <option value="Delhi NCR">Delhi NCR</option>
-                <option value="Bengaluru">Bengaluru</option>
-                <option value="Mumbai">Mumbai</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Pune">Pune</option>
-                <option value="Chennai">Chennai</option>
-                <option value="Remote">Remote</option>
-                <option value="India">Pan-India</option>
-              </select>
+            <!-- CLEAN MULTI-FILTER BAR -->
+            <div class="rounded-2xl bg-slate-50/90 border border-slate-200 p-4 space-y-3.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
+                <div class="lg:col-span-2">
+                  <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Role / Keyword</label>
+                  <input type="text" id="radar-role" oninput="onRadarFilterChange()" placeholder="e.g., Business Development, React, Data Analyst" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300" />
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Country</label>
+                  <select id="radar-country" onchange="onRadarFilterChange()" class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    <option value="Worldwide">All Countries / Worldwide</option>
+                    <option value="India">India</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="UAE">UAE / Dubai</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Netherlands">Netherlands</option>
+                    <option value="Ireland">Ireland</option>
+                    <option value="Remote Anywhere">Remote Anywhere</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">City / State (Optional)</label>
+                  <input type="text" id="radar-city" list="radar-city-suggestions" oninput="onRadarFilterChange()" placeholder="e.g., Delhi NCR, London" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300" />
+                  <datalist id="radar-city-suggestions">
+                    <option value="Delhi NCR"></option>
+                    <option value="Bengaluru"></option>
+                    <option value="Mumbai"></option>
+                    <option value="Hyderabad"></option>
+                    <option value="Pune"></option>
+                    <option value="Chennai"></option>
+                    <option value="Noida"></option>
+                    <option value="Gurugram"></option>
+                    <option value="Dubai"></option>
+                    <option value="London"></option>
+                    <option value="New York"></option>
+                    <option value="Berlin"></option>
+                    <option value="Toronto"></option>
+                    <option value="Singapore"></option>
+                  </datalist>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Job Type</label>
+                  <select id="radar-jobtype" onchange="onRadarFilterChange()" class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    <option value="all">All Types</option>
+                    <option value="fulltime">Full-time</option>
+                    <option value="contract">Contract / Freelance</option>
+                    <option value="internship">Internship</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Posted Within</label>
+                  <select id="radar-posted" onchange="onRadarFilterChange()" class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300">
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="any">Any Time</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Work Mode Pills + Reset Filters -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/70">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] font-bold text-slate-500 mr-1">Work Mode:</span>
+                  <button type="button" data-wm="all" onclick="setRadarWorkMode('all')" class="wm-pill px-3 py-1 rounded-full text-[11px] font-bold border transition cursor-pointer">All</button>
+                  <button type="button" data-wm="remote" onclick="setRadarWorkMode('remote')" class="wm-pill px-3 py-1 rounded-full text-[11px] font-bold border transition cursor-pointer">🌍 Remote Only</button>
+                  <button type="button" data-wm="hybrid" onclick="setRadarWorkMode('hybrid')" class="wm-pill px-3 py-1 rounded-full text-[11px] font-bold border transition cursor-pointer">🏢 Hybrid</button>
+                  <button type="button" data-wm="onsite" onclick="setRadarWorkMode('onsite')" class="wm-pill px-3 py-1 rounded-full text-[11px] font-bold border transition cursor-pointer">📍 On-site</button>
+                </div>
+
+                <button type="button" onclick="resetRadarFilters()" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold transition cursor-pointer">
+                  ↺ Reset Filters
+                </button>
+              </div>
             </div>
 
             <div id="twelve-apps-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
           </div>
 
-          <!-- Live Remote Feed (Remotive + Arbeitnow) -->
+          <!-- Auto-Scored Live Job Feed (Remotive + Arbeitnow) -->
           <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 class="text-sm font-extrabold text-slate-900">🌐 Live Remote Job Feed (Remotive + Arbeitnow)</h3>
-                <p class="text-xs text-slate-500">Auto-scored against your resume with 1-click Tailor &amp; Track.</p>
+                <h3 class="text-sm font-extrabold text-slate-900">🌐 Auto-Scored Live Job Feed (Remotive + Arbeitnow)</h3>
+                <p class="text-xs text-slate-500">Live openings filtered in real time by your Country, Remote &amp; Job Type filters above.</p>
               </div>
               <button type="button" id="refresh-live-jobs-btn" onclick="fetchAllLiveJobs()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer">
                 🔄 Fetch Live Jobs
               </button>
             </div>
-            <div id="live-feed-status" class="text-xs text-slate-500">Click "Fetch Live Jobs" to load live openings.</div>
+            <div id="live-feed-status" class="text-xs font-medium text-slate-500">Click "Fetch Live Jobs" to load live openings.</div>
             <div id="live-jobs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
           </div>
         </div>
@@ -641,6 +718,11 @@
                   <option value="Final">Final</option>
                   <option value="Offer">Offer</option>
                   <option value="Rejected">Rejected</option>
+                </select>
+                <select id="app-sort-by" onchange="renderTracker()" class="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold">
+                  <option value="newest">Sort: Newest</option>
+                  <option value="ctc">Sort: Highest CTC</option>
+                  <option value="company">Sort: Company A–Z</option>
                 </select>
               </div>
             </div>
@@ -939,18 +1021,18 @@
     ];
 
     const TWELVE_JOB_APPS = [
-      { id: 'naukri', name: 'Naukri.com', badge: 'Last 24h' },
-      { id: 'linkedin', name: 'LinkedIn Jobs', badge: 'Past 24h' },
-      { id: 'indeed', name: 'Indeed India', badge: 'Last 24h' },
-      { id: 'foundit', name: 'Foundit', badge: 'Latest' },
-      { id: 'instahyre', name: 'Instahyre', badge: 'Curated' },
-      { id: 'cutshort', name: 'Cutshort', badge: 'Direct HR' },
-      { id: 'hirist', name: 'Hirist', badge: 'Tech/Data' },
-      { id: 'wellfound', name: 'Wellfound', badge: 'Startups' },
-      { id: 'apna', name: 'Apna Jobs', badge: 'Fast Calls' },
-      { id: 'shine', name: 'Shine.com', badge: 'India Corp' },
-      { id: 'internshala', name: 'Internshala', badge: 'Early/Remote' },
-      { id: 'google', name: 'Google Jobs', badge: 'All Portals' }
+      { id: 'linkedin', name: 'LinkedIn Jobs', region: 'Global', badge: 'Top Network' },
+      { id: 'naukri', name: 'Naukri.com', region: 'India', badge: 'India #1' },
+      { id: 'indeed', name: 'Indeed', region: 'Global', badge: 'Multi-Country' },
+      { id: 'google', name: 'Google Jobs', region: 'Global', badge: 'All Portals' },
+      { id: 'wellfound', name: 'Wellfound', region: 'Global', badge: 'Startups' },
+      { id: 'foundit', name: 'Foundit', region: 'India', badge: 'India/APAC' },
+      { id: 'instahyre', name: 'Instahyre', region: 'India', badge: 'Curated' },
+      { id: 'cutshort', name: 'Cutshort', region: 'India', badge: 'Direct HR' },
+      { id: 'hirist', name: 'Hirist', region: 'India', badge: 'Tech/Data' },
+      { id: 'apna', name: 'Apna Jobs', region: 'India', badge: 'Fast Calls' },
+      { id: 'shine', name: 'Shine.com', region: 'India', badge: 'India Corp' },
+      { id: 'internshala', name: 'Internshala', region: 'India', badge: 'Early/Remote' }
     ];
 
     const NAUKRI_DAILY_TASKS = [
@@ -1061,29 +1143,296 @@
       },
       radar: {
         role: 'Business Development Executive',
+        country: 'India',
         city: 'Delhi NCR',
+        workMode: 'all',
+        jobType: 'all',
+        postedWithin: '24h',
         checkedDate: todayISO(),
         checkedApps: {}
       },
-      prepTipOffset: 0,
-      roadmapChecked: {},
-      customRoadmapTasks: [],
-      exitChecked: {},
-      applications: [],
-      qlog: []
-    };
+    // ---- 12-App Radar + Global/Remote Filters + Live Feed ----
+    function populateRadarInputs() {
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set('radar-role', state.radar.role || getActiveRoleObj().name);
+      set('radar-country', state.radar.country || 'India');
+      set('radar-city', state.radar.city || '');
+      set('radar-jobtype', state.radar.jobType || 'all');
+      set('radar-posted', state.radar.postedWithin || '24h');
+      updateWorkModePills();
+    }
 
-    let state = deepClone(DEFAULT_STATE);
+    function updateWorkModePills() {
+      const wm = state.radar.workMode || 'all';
+      document.querySelectorAll('.wm-pill').forEach(btn => {
+        const active = btn.dataset.wm === wm;
+        btn.className = active
+          ? 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-900 bg-slate-900 text-white shadow-sm transition cursor-pointer'
+          : 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+      });
+    }
 
-    function mergeWithDefaults(defaults, saved) {
-      if (!saved || typeof saved !== 'object') return deepClone(defaults);
-      const out = deepClone(defaults);
-      for (const key of Object.keys(saved)) {
-        if (saved[key] && typeof saved[key] === 'object' && !Array.isArray(saved[key]) && out[key] && !Array.isArray(out[key])) {
-          out[key] = { ...out[key], ...saved[key] };
-        } else if (saved[key] !== undefined) {
-          out[key] = saved[key];
+    function setRadarWorkMode(mode) {
+      state.radar.workMode = mode;
+      updateWorkModePills();
+      onRadarFilterChange();
+    }
+
+    function saveRadarInputs() {
+      state.radar.role = (document.getElementById('radar-role')?.value || '').trim();
+      state.radar.country = document.getElementById('radar-country')?.value || 'Worldwide';
+      state.radar.city = (document.getElementById('radar-city')?.value || '').trim();
+      state.radar.jobType = document.getElementById('radar-jobtype')?.value || 'all';
+      state.radar.postedWithin = document.getElementById('radar-posted')?.value || '24h';
+      saveState();
+    }
+
+    function onRadarFilterChange() {
+      saveRadarInputs();
+      if (liveJobsCache.length) renderFilteredLiveJobs();
+    }
+
+    function resetRadarFilters() {
+      state.radar.role = getActiveRoleObj().name;
+      state.radar.country = 'Worldwide';
+      state.radar.city = '';
+      state.radar.workMode = 'all';
+      state.radar.jobType = 'all';
+      state.radar.postedWithin = '24h';
+      saveState();
+      populateRadarInputs();
+      if (liveJobsCache.length) renderFilteredLiveJobs();
+      showToast('Filters reset to All Countries / Worldwide.', 'info');
+    }
+
+    function openJobApp(appId) {
+      saveRadarInputs();
+      const role = state.radar.role || getActiveRoleObj().name;
+      const country = state.radar.country || 'India';
+      const city = state.radar.city || '';
+      const wm = state.radar.workMode || 'all';
+      const jt = state.radar.jobType || 'all';
+      const posted = state.radar.postedWithin || '24h';
+
+      const isRemote = wm === 'remote' || country === 'Remote Anywhere';
+      const countryLabel = (country === 'Worldwide' || country === 'Remote Anywhere') ? '' : country;
+      const locationStr = [city, countryLabel].filter(Boolean).join(', ') || (isRemote ? 'Remote' : 'India');
+
+      const qBase = [role, jt === 'contract' ? 'contract' : jt === 'internship' ? 'internship' : ''].filter(Boolean).join(' ');
+      const q = encodeURIComponent(qBase);
+      const loc = encodeURIComponent(locationStr);
+      const sRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const sCity = (city || (country === 'India' ? 'india' : countryLabel || 'remote')).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      // LinkedIn dynamic params
+      const liWT = isRemote ? '&f_WT=2' : wm === 'hybrid' ? '&f_WT=3' : wm === 'onsite' ? '&f_WT=1' : '';
+      const liTPR = posted === '24h' ? '&f_TPR=r86400' : posted === '7d' ? '&f_TPR=r604800' : '';
+      const liJT = jt === 'fulltime' ? '&f_JT=F' : jt === 'contract' ? '&f_JT=C' : jt === 'internship' ? '&f_JT=I' : '';
+
+      // Indeed country domain + params
+      const indeedDomains = {
+        India: 'in.indeed.com', 'United States': 'www.indeed.com', 'United Kingdom': 'uk.indeed.com',
+        UAE: 'ae.indeed.com', Canada: 'ca.indeed.com', Germany: 'de.indeed.com',
+        Singapore: 'sg.indeed.com', Australia: 'au.indeed.com', Netherlands: 'nl.indeed.com', Ireland: 'ie.indeed.com'
+      };
+      const indeedHost = indeedDomains[country] || 'www.indeed.com';
+      const indeedAge = posted === '24h' ? '&fromage=1' : posted === '7d' ? '&fromage=7' : '';
+      const indeedRemote = isRemote ? '&sc=0kf%3Aattr(DSQF7)%3B' : '';
+      const indeedJT = jt === 'fulltime' ? '&jt=fulltime' : jt === 'contract' ? '&jt=contract' : jt === 'internship' ? '&jt=internship' : '';
+
+      // Naukri params
+      const naukriAge = posted === '24h' ? 'jobAge=1' : posted === '7d' ? 'jobAge=7' : '';
+      const naukriWfh = isRemote ? 'wfhType=2' : wm === 'hybrid' ? 'wfhType=3' : '';
+      const naukriQs = [naukriAge, naukriWfh].filter(Boolean).join('&');
+
+      // Google Jobs natural query
+      const gTime = posted === '24h' ? 'posted today' : posted === '7d' ? 'past week' : '';
+      const gMode = isRemote ? 'remote' : wm === 'hybrid' ? 'hybrid' : wm === 'onsite' ? 'onsite' : '';
+      const gQuery = [qBase, gMode, 'jobs', locationStr ? `in ${locationStr}` : '', gTime].filter(Boolean).join(' ');
+
+      const urls = {
+        linkedin: `https://www.linkedin.com/jobs/search/?keywords=${q}&location=${loc}${liWT}${liTPR}${liJT}`,
+        naukri: `https://www.naukri.com/${sRole}-jobs-in-${sCity}${naukriQs ? '?' + naukriQs : ''}`,
+        indeed: `https://${indeedHost}/jobs?q=${q}&l=${encodeURIComponent(isRemote && !city ? 'Remote' : locationStr)}${indeedRemote}${indeedAge}${indeedJT}`,
+        google: `https://www.google.com/search?q=${encodeURIComponent(gQuery)}&ibp=htl;jobs`,
+        wellfound: `https://wellfound.com/jobs?q=${encodeURIComponent([role, isRemote ? 'remote' : countryLabel].filter(Boolean).join(' '))}`,
+        foundit: `https://www.foundit.in/srp/results?query=${q}&locations=${encodeURIComponent(city || countryLabel || 'India')}&sort=2${isRemote ? '&workFromHome=true' : ''}`,
+        instahyre: `https://www.instahyre.com/search-jobs/?search=${q}`,
+        cutshort: `https://cutshort.io/jobs/${sRole}-jobs`,
+        hirist: `https://www.hirist.tech/search/${sRole}.html`,
+        apna: `https://apna.co/jobs?search=${encodeURIComponent([role, isRemote ? 'remote' : city].filter(Boolean).join(' '))}`,
+        shine: `https://www.shine.com/job-search/${sRole}-jobs-in-${sCity}`,
+        internshala: `https://internshala.com/${jt === 'internship' ? 'internships' : 'jobs'}/${isRemote ? 'work-from-home-' : ''}${sRole}-${jt === 'internship' ? 'internships' : 'jobs'}/`
+      };
+      window.open(urls[appId] || urls.linkedin, '_blank', 'noopener,noreferrer');
+    }
+
+    function toggleAppScanned(id) { state.radar.checkedApps[id] = !state.radar.checkedApps[id]; saveState(); renderTwelveAppsGrid(); }
+    function renderTwelveAppsGrid() {
+      const map = state.radar.checkedApps || {};
+      const count = TWELVE_JOB_APPS.filter(a => map[a.id]).length;
+      document.getElementById('apps-scanned-badge').textContent = `${count}/12 Apps Scanned Today`;
+      document.getElementById('twelve-apps-grid').innerHTML = TWELVE_JOB_APPS.map(a => `
+        <div class="rounded-xl border ${map[a.id] ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/60'} p-3 flex flex-col justify-between gap-2.5">
+          <div class="flex items-center justify-between gap-1.5">
+            <span class="text-xs font-bold text-slate-900 truncate">${a.name}</span>
+            <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${a.region === 'Global' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">${a.region}</span>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+            <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
+              <input type="checkbox" ${map[a.id] ? 'checked' : ''} onchange="toggleAppScanned('${a.id}')" class="rounded" /> Checked
+            </label>
+            <button type="button" onclick="openJobApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold cursor-pointer">Open ↗</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function fetchAllLiveJobs() {
+      saveRadarInputs();
+      const btn = document.getElementById('refresh-live-jobs-btn');
+      const statusEl = document.getElementById('live-feed-status');
+      btn.disabled = true; btn.textContent = '⏳ Fetching...';
+      statusEl.textContent = 'Fetching live jobs from Remotive & Arbeitnow...';
+
+      const kw = (state.radar.role || '').split(/\s+/)[0] || '';
+      const list = [];
+      const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+      const score = txt => {
+        const resW = new Set(getResumeSearchBlob(state.resume).match(/\b[a-z]{3,}\b/g) || []);
+        const jobW = [...new Set((txt.toLowerCase().match(/\b[a-z]{3,}\b/g) || []).filter(w => !STOP_WORDS.has(w)))].slice(0, 25);
+        const hits = jobW.filter(w => resW.has(w)).length;
+        return Math.min(96, Math.max(20, Math.round((hits / Math.max(1, Math.min(jobW.length, 12))) * 100)));
+      };
+
+      const fetchSafe = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      };
+
+      try {
+        const d1 = await fetchSafe(`https://remotive.com/api/remote-jobs?limit=35${kw ? '&search=' + encodeURIComponent(kw) : ''}`);
+        (d1.jobs || []).forEach(j => {
+          const desc = strip(j.description).slice(0, 1200);
+          const locText = j.candidate_required_location || 'Worldwide';
+          const rawType = (j.job_type || 'full_time').toLowerCase();
+          const normType = rawType.includes('contract') || rawType.includes('freelance') ? 'contract' : rawType.includes('intern') ? 'internship' : 'fulltime';
+          list.push({
+            id: 'rem_' + j.id, source: 'Remotive', title: j.title, company: j.company_name, url: j.url, desc,
+            location: locText, workMode: 'remote', jobType: normType,
+            postedMs: j.publication_date ? Date.parse(j.publication_date) : Date.now(),
+            match: score(j.title + ' ' + desc)
+          });
+        });
+      } catch (e) {}
+
+      try {
+        const d2 = await fetchSafe('https://www.arbeitnow.com/api/job-board-api');
+        (d2.data || []).slice(0, 40).forEach((j, i) => {
+          const desc = strip(j.description).slice(0, 1200);
+          const locText = j.location || (j.remote ? 'Remote' : 'Germany / Europe');
+          const types = (j.job_types || []).join(' ').toLowerCase();
+          const normType = types.includes('contract') || types.includes('freelance') ? 'contract' : types.includes('intern') ? 'internship' : 'fulltime';
+          const wm = j.remote ? 'remote' : /hybrid/i.test(locText + ' ' + desc) ? 'hybrid' : 'onsite';
+          list.push({
+            id: 'arb_' + i, source: 'Arbeitnow', title: j.title, company: j.company_name, url: j.url, desc,
+            location: locText, workMode: wm, jobType: normType,
+            postedMs: j.created_at ? j.created_at * 1000 : Date.now(),
+            match: score(j.title + ' ' + desc)
+          });
+        });
+      } catch (e) {}
+
+      liveJobsCache = list.sort((a, b) => b.match - a.match);
+      btn.disabled = false; btn.textContent = '🔄 Fetch Live Jobs';
+      renderFilteredLiveJobs();
+    }
+
+    function renderFilteredLiveJobs() {
+      const statusEl = document.getElementById('live-feed-status');
+      const grid = document.getElementById('live-jobs-grid');
+      if (!liveJobsCache.length) {
+        statusEl.textContent = 'No live jobs fetched yet or APIs are temporarily busy — click "Fetch Live Jobs" to retry or use the 12 Job Apps above.';
+        grid.innerHTML = '';
+        return;
+      }
+
+      const country = state.radar.country || 'Worldwide';
+      const city = (state.radar.city || '').toLowerCase();
+      const wm = state.radar.workMode || 'all';
+      const jt = state.radar.jobType || 'all';
+      const posted = state.radar.postedWithin || 'any';
+      const kw = (state.radar.role || '').toLowerCase().trim();
+      const now = Date.now();
+
+      const countryAliases = {
+        'India': ['india', 'bengaluru', 'bangalore', 'delhi', 'mumbai', 'pune', 'hyderabad', 'chennai', 'apac', 'asia', 'worldwide', 'anywhere'],
+        'United States': ['usa', 'united states', 'us only', 'us,', 'americas', 'worldwide', 'anywhere'],
+        'United Kingdom': ['uk', 'united kingdom', 'london', 'emea', 'europe', 'worldwide', 'anywhere'],
+        'UAE': ['uae', 'dubai', 'abu dhabi', 'middle east', 'emea', 'worldwide', 'anywhere'],
+        'Canada': ['canada', 'toronto', 'vancouver', 'americas', 'worldwide', 'anywhere'],
+        'Germany': ['germany', 'berlin', 'munich', 'deutschland', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Singapore': ['singapore', 'apac', 'asia', 'worldwide', 'anywhere'],
+        'Australia': ['australia', 'sydney', 'melbourne', 'apac', 'worldwide', 'anywhere'],
+        'Netherlands': ['netherlands', 'amsterdam', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Ireland': ['ireland', 'dublin', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Remote Anywhere': ['worldwide', 'anywhere', 'remote', 'global']
+      };
+
+      const filtered = liveJobsCache.filter(j => {
+        const locL = (j.location || '').toLowerCase();
+        const textL = `${j.title} ${j.company} ${j.desc}`.toLowerCase();
+
+        if (wm !== 'all' && j.workMode !== wm) return false;
+        if (jt !== 'all' && j.jobType !== jt) return false;
+        if (posted === '24h' && (now - j.postedMs) > 2 * 86400000) return false;
+        if (posted === '7d' && (now - j.postedMs) > 8 * 86400000) return false;
+
+        if (country !== 'Worldwide') {
+          const aliases = countryAliases[country] || [country.toLowerCase()];
+          if (!aliases.some(a => locL.includes(a))) return false;
         }
+        if (city && !locL.includes(city) && !locL.includes('worldwide') && !locL.includes('anywhere')) return false;
+        if (kw) {
+          const tokens = kw.split(/\s+/).filter(t => t.length > 2);
+          if (tokens.length && !tokens.some(t => textL.includes(t))) return false;
+        }
+        return true;
+      });
+
+      const activeSummary = [country, city ? state.radar.city : '', wm !== 'all' ? wm.toUpperCase() : '', jt !== 'all' ? jt : ''].filter(Boolean).join(' • ');
+      statusEl.textContent = `Showing ${filtered.length} of ${liveJobsCache.length} live jobs (${activeSummary || 'All'}) — sorted by Resume Match %.`;
+
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="col-span-full text-center py-8 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-500">No live feed openings matched these exact filters. Try switching <strong>Country</strong> to <em>All Countries / Worldwide</em>, <strong>Posted Within</strong> to <em>Any Time</em>, or click <strong>↺ Reset Filters</strong>.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.slice(0, 21).map(j => {
+        const wmBadge = j.workMode === 'remote' ? '🌍 Remote' : j.workMode === 'hybrid' ? '🏢 Hybrid' : '📍 On-site';
+        const jtLabel = j.jobType === 'contract' ? 'Contract' : j.jobType === 'internship' ? 'Internship' : 'Full-time';
+        return `
+        <div class="rounded-xl border border-slate-200 p-4 flex flex-col justify-between gap-3 hover:border-slate-300 transition">
+          <div class="space-y-1.5">
+            <div class="flex justify-between gap-2">
+              <h4 class="text-xs font-bold text-slate-900 leading-snug">${escapeHTML(j.title)}</h4>
+              <span class="shrink-0 h-fit px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${j.match}% Match</span>
+            </div>
+            <p class="text-[11px] font-semibold text-indigo-600">${escapeHTML(j.company)} • ${j.source}</p>
+            <div class="flex flex-wrap gap-1 pt-0.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700">${wmBadge}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200 truncate max-w-[150px]" title="${escapeHTML(j.location)}">${escapeHTML(j.location)}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">${jtLabel}</span>
+            </div>
+          </div>
+          <div class="flex gap-1.5 pt-1">
+            <button type="button" onclick="tailorLiveJob('${j.id}')" class="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold cursor-pointer">✨ Tailor Resume</button>
+            <button type="button" onclick="trackLiveJob('${j.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer">+ Track</button>
+            <a href="${escapeHTML(j.url)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold">↗</a>
+          </div>
+        </div>`;
+      }).join('');
+    }
       }
       if (!Array.isArray(out.resume.experience)) out.resume.experience = deepClone(defaults.resume.experience);
       if (!Array.isArray(out.resume.education)) out.resume.education = deepClone(defaults.resume.education);
@@ -2241,7 +2590,14 @@
 
       const q = (document.getElementById('app-search')?.value || '').toLowerCase();
       const f = document.getElementById('app-filter-status')?.value || 'ALL';
-      const filtered = all.filter(a => (f === 'ALL' || a.status === f) && (!q || `${a.company} ${a.role}`.toLowerCase().includes(q)));
+      const sortBy = document.getElementById('app-sort-by')?.value || 'newest';
+      const filtered = all
+        .filter(a => (f === 'ALL' || a.status === f) && (!q || `${a.company} ${a.role}`.toLowerCase().includes(q)))
+        .sort((a, b) => {
+          if (sortBy === 'ctc') return (parseFloat(b.ctc) || 0) - (parseFloat(a.ctc) || 0);
+          if (sortBy === 'company') return (a.company || '').localeCompare(b.company || '');
+          return (b.id || 0) - (a.id || 0);
+        });
       const statuses = ['Applied', 'Shortlisted', 'Round 1', 'Final', 'Offer', 'Rejected'];
       document.getElementById('applications-tbody').innerHTML = filtered.length ? filtered.map(a => `
         <tr>
