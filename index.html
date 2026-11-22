@@ -1434,12 +1434,7 @@
         </div>`;
       }).join('');
     }
-      }
-      if (!Array.isArray(out.resume.experience)) out.resume.experience = deepClone(defaults.resume.experience);
-      if (!Array.isArray(out.resume.education)) out.resume.education = deepClone(defaults.resume.education);
-      return out;
-    }
-
+      
     function loadLocalState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
