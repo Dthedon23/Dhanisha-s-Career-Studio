@@ -1163,13 +1163,35 @@
     }
 
     function updateWorkModePills() {
-      const wm = state.radar.workMode || 'all';
-      document.querySelectorAll('.wm-pill').forEach(btn => {
-        const active = btn.dataset.wm === wm;
-        btn.className = active
-          ? 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-900 bg-slate-900 text-white shadow-sm transition cursor-pointer'
-          : 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+      radar: {
+        role: 'Business Development Executive',
+        country: 'India',
+        city: 'Delhi NCR',
+        workMode: 'all',
+        jobType: 'all',
+        postedWithin: '24h',
+        checkedDate: todayISO(),
+        checkedApps: {}
+      }
+    };
+
+    // ---- 12-App Radar + Global/Remote Filters + Live Feed ----
+    function populateRadarInputs() {
+      const set = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.value = v;
+      };
+
+      set('radar-role', state.radar.role || getActiveRoleObj().name);
+      set('radar-country', state.radar.country || 'India');
+      set('radar-city', state.radar.city || '');
+      set('radar-jobtype', state.radar.jobType || 'all');
+      set('radar-posted', state.radar.postedWithin || '24h');
+
+      updateWorkModePills();
     }
+
+    function updateWorkModePills() {
 
     function setRadarWorkMode(mode) {
       state.radar.workMode = mode;
