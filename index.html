@@ -1636,7 +1636,78 @@
 
       return res;
     }
+function autoDetectActiveRoleFromResume(res) {
+  const expText = (res.experience || [])
+    .map(e => `${e.role || ''} ${e.company || ''} ${e.bullets || ''}`)
+    .join(' ');
+  const blob = `${res.headline || ''} ${expText} ${res.skills || ''} ${res.summary || ''}`.toLowerCase();
 
+  const rules = [
+    { id: 'swe', re: /\b(software\s*engineer|full\s*stack|frontend|backend|react|node\.?js|java|python|javascript|typescript|api|microservices|docker|kubernetes)\b/gi },
+    { id: 'data', re: /\b(data\s*analyst|data\s*scientist|business\s*intelligence|\bbi\b|power\s*bi|tableau|sql|pandas|numpy|etl|dashboard|analytics|mis)\b/gi },
+    { id: 'pm', re: /\b(product\s*manager|prd|roadmap|agile|scrum|jira|a\/b\s*test|user\s*retention|product\s*strategy)\b/gi },
+    { id: 'sales', re: /\b(business\s*development|b2b|sales|bde|lead\s*generation|quota|revenue|crm|zoho|salesforce|client\s*acquisition|upsell|sme)\b/gi },
+    { id: 'marketing', re: /\b(digital\s*marketing|seo|sem|meta\s*ads|google\s*ads|ga4|performance\s*marketing|campaign|content|cro)\b/gi },
+    { id: 'hr', re: /\b(human\s*resources|\bhr\b|talent\s*acquisition|recruiter|recruitment|naukri|resdex|onboarding|payroll|hris)\b/gi },
+    { id: 'finance', re: /\b(accountant|accounts|finance|fp&a|tally|gst|tds|auditing|balance\s*sheet|reconciliation|bookkeeping)\b/gi },
+    { id: 'ops', re: /\b(operations|supply\s*chain|logistics|vendor|sla|\btat\b|inventory|procurement|warehouse)\b/gi },
+    { id: 'design', re: /\b(ui\/?ux|ux\s*designer|ui\s*designer|figma|wireframe|prototype|design\s*system|usability)\b/gi },
+    { id: 'ba', re: /\b(business\s*analyst|\bba\b|\bbrd\b|\bfrd\b|user\s*stories|\buat\b|requirements|process\s*mapping)\b/gi },
+    { id: 'cs', re: /\b(customer\s*success|customer\s*support|client\s*success|\bcsat\b|\bnps\b|retention|renewal|zendesk|freshdesk|escalation)\b/gi }
+  ];
+
+  let bestId = null;
+  let bestScore = 0;
+
+  rules.forEach(rule => {
+    const hits = blob.match(rule.re);
+    const count = hits ? hits.length : 0;
+    if (count > bestScore) {
+      bestScore = count;
+      bestId = rule.id;
+    }
+  });
+
+  if (bestId && bestScore >= 2) {
+    state.activeRoleId = bestId;
+    const roleObj = getAllRoles().find(r => r.id === bestId);
+    state.radar.role = res.experience?.[0]?.role || roleObj?.name || '';
+    renderRoleSelector();
+    populateRadarInputs();
+    renderPrepModule();
+    return roleObj?.name || bestId;
+  }
+
+  const customTitle = (res.experience?.[0]?.role || res.headline || '').trim();
+  if (customTitle && customTitle.length >= 3 && customTitle.length <= 65) {
+    const existing = (state.customRoles || []).find(r => r.name.toLowerCase() === customTitle.toLowerCase());
+    if (existing) {
+      state.activeRoleId = existing.id;
+    } else {
+      const created = {
+        id: 'detected_' + Date.now(),
+        isCustom: true,
+        name: customTitle,
+        headline: res.headline || customTitle,
+        skills: res.skills || '',
+        achievement: (res.experience?.[0]?.bullets || '').split('\n')[0] || '',
+        summary: res.summary || '',
+        tip: `Focus on concrete ${customTitle} outcomes and metrics.`,
+        trap: `"Tell me about your key experience as a ${customTitle}."`,
+        answer: (res.experience?.[0]?.bullets || '').split('\n')[0] || 'Delivered measurable results in core responsibilities.'
+      };
+      state.customRoles.push(created);
+      state.activeRoleId = created.id;
+    }
+    state.radar.role = customTitle;
+    renderRoleSelector();
+    populateRadarInputs();
+    renderPrepModule();
+    return customTitle;
+  }
+
+  return null;
+}
     function parseStructuredResumeLines(lines) {
       // Reset resume fields cleanly so stale sample/previous data never bleeds in
       state.resume = createInitialResume();
