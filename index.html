@@ -194,6 +194,50 @@
 
                 <div id="upload-status" class="hidden text-xs font-medium px-3.5 py-2.5 rounded-xl"></div>
 
+                <!-- OLD VS NEW ATS VERSION TOGGLE + PERSONALIZED ADD-ON BOX -->
+                <div id="parsed-personalize-panel" class="hidden rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <button type="button" id="btn-view-old-resume" onclick="switchResumeVersionView('old')" class="px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-300 text-[11px] font-bold cursor-pointer">
+                        📜 Old Resume
+                      </button>
+                      <button type="button" id="btn-view-new-resume" onclick="switchResumeVersionView('new')" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold cursor-pointer">
+                        ✨ New ATS Version
+                      </button>
+                    </div>
+                    <span id="parsed-found-count" class="text-[11px] font-bold text-indigo-900"></span>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                      Old Resume Extracted
+                    </span>
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      New ATS Version Ready
+                    </span>
+                    <span id="detected-role-pill" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      Role: Auto
+                    </span>
+                  </div>
+
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    Purane resume se data nikaal kar naya ATS-friendly draft bana diya hai. Kuch aur add karna ho toh neeche daal kar <strong>Apply to New ATS Resume</strong> dabao:
+                  </p>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="text" id="perso-title" placeholder="New Target Title (e.g., Senior Analyst)" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+                    <input type="text" id="perso-company" placeholder="Add Company / Role (e.g., Acme Corp)" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+                  </div>
+                  <input type="text" id="perso-skills" placeholder="Add Extra Skills (comma-separated, e.g., SQL, Excel, CRM)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+                  <textarea id="perso-extra-note" rows="2" placeholder="Add custom point, achievement, or note for your new ATS resume..." class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs"></textarea>
+
+                  <div class="flex justify-end">
+                    <button type="button" onclick="applyPersonalizedAddons()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition cursor-pointer">
+                      ✨ Apply to New ATS Resume
+                    </button>
+                  </div>
+                </div>
+
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                   <button type="button" onclick="applyActiveRoleToResume()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition cursor-pointer">
                     ✨ Load Active Role Sample
@@ -280,7 +324,6 @@
                 <span id="acc-icon-3" class="text-slate-400 text-sm font-bold">▸</span>
               </button>
               <div id="acc-body-3" class="acc-body hidden px-5 pb-5 pt-2 border-t border-slate-100 space-y-5">
-                <!-- Experience -->
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Work Experience</h3>
@@ -291,13 +334,11 @@
                   <div id="experience-editor-list" class="space-y-3"></div>
                 </div>
 
-                <!-- Skills -->
                 <div class="pt-3 border-t border-slate-100">
                   <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Core Skills (comma-separated)</label>
                   <textarea id="cv-skills" rows="2" oninput="syncBasicResumeFields()" class="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-slate-300"></textarea>
                 </div>
 
-                <!-- Education -->
                 <div class="pt-3 border-t border-slate-100 space-y-2.5">
                   <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Education</h3>
@@ -329,7 +370,6 @@
                 <span id="acc-icon-4" class="text-slate-400 text-sm font-bold">▸</span>
               </button>
               <div id="acc-body-4" class="acc-body hidden px-5 pb-5 pt-2 border-t border-slate-100 space-y-4">
-                <!-- Version Bar -->
                 <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <select id="resume-version-select" onchange="switchResumeVersion(this.value)" class="flex-1 min-w-[140px] rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800"></select>
                   <button type="button" onclick="openVersionModal()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-semibold cursor-pointer">💾 Save Version</button>
@@ -337,7 +377,6 @@
                   <button type="button" onclick="revertToMasterResume()" class="px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold cursor-pointer">↩️ Revert</button>
                 </div>
 
-                <!-- JD Inputs -->
                 <div class="space-y-2.5">
                   <div class="flex items-center justify-between">
                     <label class="text-xs font-bold text-slate-700">Paste Target Job Description (JD)</label>
@@ -359,19 +398,16 @@
                   </div>
                 </div>
 
-                <!-- Missing Keywords -->
                 <div id="ats-results-box" class="hidden space-y-2 pt-2 border-t border-slate-100">
                   <p class="text-[11px] font-bold text-amber-700">Missing JD Keywords (Click to + Add):</p>
                   <div id="ats-missing-tags" class="flex flex-wrap gap-1.5"></div>
                 </div>
 
-                <!-- Change Log -->
                 <div id="jd-changelog-box" class="hidden rounded-xl bg-emerald-50 border border-emerald-200 p-3 space-y-1">
                   <p class="text-xs font-bold text-emerald-900">✅ Changes Applied:</p>
                   <ul id="jd-changelog-list" class="list-disc pl-4 text-xs text-emerald-800 space-y-0.5"></ul>
                 </div>
 
-                <!-- Optional Gemini API Key -->
                 <details class="pt-2 border-t border-slate-100">
                   <summary class="text-xs font-semibold text-slate-500 cursor-pointer select-none">Optional: Deep AI Tailor with Free Gemini Key ▾</summary>
                   <div class="mt-2.5 flex gap-2">
@@ -428,7 +464,6 @@
           <!-- RIGHT COLUMN: STICKY LIVE PREVIEW, 8 TEMPLATES, COLOR PICKER & PDF EXPORTS -->
           <div class="lg:col-span-6 lg:sticky lg:top-28 space-y-4">
             <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3.5">
-              <!-- Top Controls: Preview Mode + 3 PDF Export Buttons -->
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div class="inline-flex bg-slate-100 p-1 rounded-xl">
                   <button type="button" id="preview-mode-resume" onclick="setPreviewMode('resume')" class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">Resume</button>
@@ -446,7 +481,6 @@
               <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">4 Classic + 4 Colourful Templates</span>
-                  <!-- Accent Color Swatches + Custom Color Picker -->
                   <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold text-slate-400">Accent:</span>
                     <button type="button" onclick="setAccentColor('#1e3a8a')" class="w-4 h-4 rounded-full bg-[#1e3a8a] border border-slate-300 cursor-pointer" title="Royal Navy"></button>
@@ -498,7 +532,6 @@
 
         <!-- SUB 1: NAUKRI & LINKEDIN OPTIMIZER -->
         <div id="jobs-sub-optimizer" class="jobs-subpanel grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <!-- Naukri Card -->
           <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 class="text-sm font-extrabold text-slate-900">🔵 Naukri.com Profile Updates</h3>
@@ -534,7 +567,6 @@
             </div>
           </div>
 
-          <!-- LinkedIn Card -->
           <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 class="text-sm font-extrabold text-slate-900">🔷 LinkedIn Profile Updates</h3>
@@ -582,7 +614,6 @@
               <span id="apps-scanned-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">0/12 Apps Scanned Today</span>
             </div>
 
-            <!-- CLEAN MULTI-FILTER BAR -->
             <div class="rounded-2xl bg-slate-50/90 border border-slate-200 p-4 space-y-3.5">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
                 <div class="lg:col-span-2">
@@ -649,7 +680,6 @@
                 </div>
               </div>
 
-              <!-- Work Mode Pills + Reset Filters -->
               <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/70">
                 <div class="flex flex-wrap items-center gap-1.5">
                   <span class="text-[11px] font-bold text-slate-500 mr-1">Work Mode:</span>
@@ -668,7 +698,6 @@
             <div id="twelve-apps-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
           </div>
 
-          <!-- Auto-Scored Live Job Feed (Remotive + Arbeitnow) -->
           <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -695,7 +724,6 @@
           <button type="button" data-trk-sub="ctc" onclick="switchTrackerSub('ctc')" class="trk-sub-btn px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer">💰 India CTC Calculator</button>
         </div>
 
-        <!-- SUB 1: APPLICATION TRACKER -->
         <div id="trk-sub-apps" class="trk-subpanel space-y-5">
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div class="bg-white rounded-2xl border border-slate-200 p-4"><p class="text-xs text-slate-500">Applied</p><p id="stat-total" class="text-2xl font-extrabold text-slate-900 mt-1">0</p></div>
@@ -772,7 +800,6 @@
           </div>
         </div>
 
-        <!-- SUB 2: INTERVIEW Q-LOG -->
         <div id="trk-sub-qlog" class="trk-subpanel hidden bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           <h3 class="text-sm font-extrabold text-slate-900">🎙️ Interview Question Log (STAR Answers)</h3>
           <form id="qlog-form" onsubmit="addQLogEntry(event)" class="space-y-2.5 bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -787,7 +814,6 @@
           <div id="qlog-list" class="space-y-3"></div>
         </div>
 
-        <!-- SUB 3: INDIA CTC CALCULATOR -->
         <div id="trk-sub-ctc" class="trk-subpanel hidden max-w-2xl bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
           <div>
             <h3 class="text-base font-extrabold text-slate-900">💰 India CTC-to-In-Hand Calculator</h3>
@@ -838,7 +864,6 @@
           <button type="button" data-prep-sub="roadmap" onclick="switchPrepSub('roadmap')" class="prep-sub-btn px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer">🗺️ 30-Day Roadmap &amp; Exit</button>
         </div>
 
-        <!-- SUB 1: DAILY PREP & SCRIPTS -->
         <div id="prep-sub-scripts" class="prep-subpanel space-y-6">
           <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-sm space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -861,7 +886,6 @@
           </div>
         </div>
 
-        <!-- SUB 2: 30-DAY ROADMAP & EXIT CHECKLIST -->
         <div id="prep-sub-roadmap" class="prep-subpanel hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div class="flex items-center justify-between">
@@ -1003,6 +1027,24 @@
     const todayISO = () => new Date().toISOString().split('T')[0];
     const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
+    function mergeWithDefaults(defaults, incoming) {
+      if (!incoming || typeof incoming !== 'object') return deepClone(defaults);
+      if (Array.isArray(defaults)) {
+        return Array.isArray(incoming) ? deepClone(incoming) : deepClone(defaults);
+      }
+      const out = {};
+      Object.keys(defaults).forEach((k) => {
+        if (incoming[k] === undefined || incoming[k] === null) {
+          out[k] = deepClone(defaults[k]);
+        } else if (typeof defaults[k] === 'object' && !Array.isArray(defaults[k])) {
+          out[k] = mergeWithDefaults(defaults[k], incoming[k]);
+        } else {
+          out[k] = incoming[k];
+        }
+      });
+      return out;
+    }
+
     // =========================================================================
     // 2. 11 INDIAN ROLES & DATASETS
     // =========================================================================
@@ -1010,7 +1052,7 @@
       { id: 'swe', name: 'Software Engineer', headline: 'Software Engineer | JavaScript, React, Node.js, SQL & APIs', skills: 'JavaScript, React, Node.js, Python, SQL, REST APIs, Git, Agile, System Design, Unit Testing', summary: 'Results-driven Software Engineer with hands-on experience building scalable web applications, resilient REST APIs, and optimized database workflows that cut latency and improve user retention.', achievement: 'Architected and shipped 4 production web modules serving 25,000+ monthly active users, reducing API response latency by 42%.', tip: 'Always clarify edge cases and trade-offs before writing code.', trap: '"Tell me about a production bug you caused."', answer: 'Own it directly, explain how fast you mitigated it, and highlight the automated test you added afterward.' },
       { id: 'data', name: 'Data Analyst', headline: 'Data Analyst | SQL, Power BI, Python & Advanced Excel', skills: 'SQL, Power BI, Tableau, Python (Pandas), Advanced Excel, Data Visualization, ETL, KPI Dashboards, Funnel Analysis', summary: 'Analytical Data Analyst skilled in transforming raw operational and sales datasets into automated executive dashboards and actionable revenue insights.', achievement: 'Automated 10+ weekly MIS & KPI dashboards in Power BI and SQL, saving 14 hours/week and uncovering a 15% retention opportunity.', tip: 'Connect every dashboard you built to a concrete business decision.', trap: '"How do you handle messy or missing data?"', answer: 'Audit null rates first, verify upstream tracking, document assumptions, and clean reproducibly in SQL/Python.' },
       { id: 'pm', name: 'Product Manager', headline: 'Product Manager | Roadmaps, PRDs, Agile & Growth Analytics', skills: 'Product Strategy, PRD Writing, Roadmap Prioritization, Agile & Scrum, Jira, User Research, A/B Testing, SQL, Stakeholder Management', summary: 'Execution-focused Product Manager experienced in translating customer insights into crisp PRDs, prioritized roadmaps, and high-adoption product launches.', achievement: 'Launched 3 onboarding & checkout workflows that improved Day-7 user activation by 21% and lifted conversion by 14%.', tip: 'Use RICE or Impact-vs-Effort frameworks to structure every product case.', trap: '"How do you say no to a senior stakeholder?"', answer: 'Show sprint capacity and objective data: align trade-offs directly to this quarter’s top revenue KPI.' },
-      { id: 'sales', name: 'B2B Sales / Justdial', headline: 'Business Development Executive | B2B Sales, SME Onboarding & CRM', skills: 'B2B Sales, SME Onboarding, Field Sales, Cold Calling, Client Negotiation, Zoho/Salesforce CRM, Revenue Growth, Upselling & Renewals', summary: 'Target-driven B2B Sales & Business Development professional with a proven track record of SME client acquisition, consultative demos, and consistent monthly quota overachievement.', achievement: 'Achieved 132% of quarterly revenue targets for 3 consecutive quarters by onboarding 35+ SME clients/month with a 78% renewal rate.', tip: 'Lead every answer with quota %, average deal size, and renewal rate.', trap: '"How do you handle a prospect saying your competitor is cheaper?"', answer: 'Pivot to ROI and verified lead quality, propose a 30-day starter package to prove value, and lock a follow-up date.' },
+      { id: 'sales', name: 'B2B Sales / Justdial', headline: 'Business Development Executive | B2B Sales, SME Onboarding & CRM', skills: 'B2B Sales, SME Onboarding, Field Sales, Cold Calling, Client Negotiation, Zoho/Salesforce CRM, Revenue Growth, Upselling & Renewals, Excel & MIS', summary: 'Target-driven B2B Sales & Business Development professional with a proven track record of SME client acquisition, consultative demos, and consistent monthly quota overachievement.', achievement: 'Achieved 132% of quarterly revenue targets for 3 consecutive quarters by onboarding 35+ SME clients/month across Delhi NCR.', tip: 'Lead every answer with quota %, average deal size, and renewal rate.', trap: '"How do you handle a prospect saying your competitor is cheaper?"', answer: 'Pivot to ROI and verified lead quality, propose a 30-day starter package to prove value, and lock a follow-up date.' },
       { id: 'marketing', name: 'Digital Marketing', headline: 'Digital Marketing Specialist | Meta Ads, Google Ads, SEO & Growth', skills: 'Performance Marketing, Meta Ads, Google Ads, SEO, GA4, Lead Generation, Content Strategy, CRO, Email Marketing', summary: 'ROI-focused Digital Marketing specialist experienced in full-funnel paid acquisition, technical SEO, and landing page optimization to lower CPL and scale qualified pipeline.', achievement: 'Scaled qualified monthly leads by 48% while reducing Cost Per Lead (CPL) by 26% across Meta and Google Search campaigns.', tip: 'Speak in ROAS, CPL, CAC, and SQL conversion—not vanity impressions.', trap: '"Walk me through a campaign that underperformed."', answer: 'Share your hypothesis, how quickly you spotted high CPL, paused wasted spend, and iterated creatives to hit target ROAS.' },
       { id: 'hr', name: 'HR / Recruiter', headline: 'HR & Talent Acquisition Specialist | End-to-End Hiring & HR Ops', skills: 'End-to-End Recruitment, Naukri Resdex, LinkedIn Recruiter, Boolean Sourcing, Onboarding, HR Operations, Employee Engagement, HRIS', summary: 'People-first HR & Talent Acquisition professional skilled in full-cycle hiring, Boolean sourcing, offer-to-join optimization, and seamless HR operations.', achievement: 'Closed 38+ technical and sales roles within a 21-day average Time-to-Hire while improving offer-to-join ratio from 68% to 87%.', tip: 'Highlight Time-to-Hire, Offer-to-Join %, and sourcing speed.', trap: '"How do you handle last-minute offer dropouts?"', answer: 'Maintain a warm backup pipeline, run Day-15/Day-7 engagement check-ins, and qualify counter-offer risks early.' },
       { id: 'finance', name: 'Finance / Accounts', headline: 'Finance & Accounts Executive | Tally Prime, GST, TDS & MIS', skills: 'Accounting, Tally Prime, GST & TDS Compliance, AP/AR, Bank Reconciliation, Monthly Closing, MIS Reporting, Advanced Excel, Audit', summary: 'Detail-oriented Finance & Accounts professional experienced in zero-error statutory compliance (GST/TDS), ledger reconciliations, and automated monthly MIS reporting.', achievement: 'Delivered 100% on-time monthly GST/TDS filings with zero audit discrepancies and cut monthly closing prep time by 30%.', tip: 'Emphasize zero-error compliance, reconciliation speed, and Excel automation.', trap: '"How do you spot discrepancies in large ledgers?"', answer: 'Use cross-footing checks, variance flags (>5%), and reconcile directly against primary bank statements.' },
@@ -1067,40 +1109,21 @@
     ];
 
     // =========================================================================
-    // 3. DEFAULT STATE & DEEP MERGE
+    // 3. DEFAULT STATE & PERSISTENCE
     // =========================================================================
     function createInitialResume() {
       return {
-        name: 'Dhanisha Sharma',
-        headline: 'Business Development Executive | B2B Sales, SME Onboarding & CRM',
-        email: 'dhanisha.career@example.com',
-        phone: '+91 98765 43210',
-        location: 'Delhi NCR',
-        linkedin: 'linkedin.com/in/dhanisha',
+        name: '',
+        headline: '',
+        email: '',
+        phone: '',
+        location: '',
+        linkedin: '',
         portfolio: '',
-        summary: 'Target-driven B2B Sales & Business Development professional with 3+ years of experience driving SME client acquisition, CRM pipeline discipline, and consistent revenue overachievement across Indian markets. Immediate joiner ready to deliver measurable impact from Day 1.',
-        skills: 'B2B Sales, SME Onboarding, Field Sales, Cold Calling, Client Negotiation, Zoho CRM, Revenue Growth, Upselling & Renewals, Excel & MIS',
-        experience: [
-          {
-            id: 101,
-            role: 'Senior Business Development Executive',
-            company: 'GrowthAxis India Pvt. Ltd.',
-            duration: 'Jan 2023 – Present',
-            location: 'Delhi NCR',
-            bullets: 'Achieved 132% of quarterly revenue targets for 3 consecutive quarters by onboarding 35+ SME clients/month across Delhi NCR.\nSustained a 78% client renewal and upsell conversion rate through structured CRM pipeline tracking and consultative demos.\nPartnered with operations and product teams to cut client onboarding turnaround time by 25%.'
-          },
-          {
-            id: 102,
-            role: 'Sales & Operations Associate',
-            company: 'MetroLink Services',
-            duration: 'Jun 2021 – Dec 2022',
-            location: 'Noida',
-            bullets: 'Executed 50+ daily outbound calls and coordinated with 15+ regional partners, lifting monthly qualified pipeline by 30%.\nResolved escalated client billing and onboarding requests while maintaining a 95% CSAT score.'
-          }
-        ],
-        education: [
-          { id: 201, degree: 'Bachelor of Commerce (B.Com)', school: 'University of Delhi', year: '2018 – 2021' }
-        ]
+        summary: '',
+        skills: '',
+        experience: [],
+        education: []
       };
     }
 
@@ -1117,18 +1140,21 @@
       activeVersionId: 'master',
       masterResume: createInitialResume(),
       resume: createInitialResume(),
+      oldExtractedResume: null,
+      newAtsResume: null,
+      activeResumeView: 'new',
       tailoredVersions: [],
       jdCompany: '',
       jdTitle: '',
       jdText: '',
       coverLetter: {
         tone: 'formal',
-        company: 'Justdial Ltd.',
+        company: '',
         manager: 'Hiring Manager',
-        subject: 'Application for Business Development Executive — Dhanisha Sharma',
-        p1: 'Dear Hiring Manager, I am writing to express my strong interest in the Business Development Executive position at Justdial Ltd. With 3+ years of hands-on experience in B2B Sales, SME Onboarding, and CRM pipeline management, I am excited to contribute to your team.',
-        p2: 'In my recent role at GrowthAxis India Pvt. Ltd., I achieved 132% of quarterly revenue targets for 3 consecutive quarters while maintaining a 78% client renewal rate. I bring disciplined daily execution and strong consultative communication.',
-        p3: 'I am available as an Immediate Joiner and would welcome the opportunity to discuss how my track record aligns with your goals. Thank you for your time and consideration.'
+        subject: '',
+        p1: '',
+        p2: '',
+        p3: ''
       },
       optimizer: {
         naukriHeadline: '',
@@ -1142,302 +1168,23 @@
         liWeeklyChecked: {}
       },
       radar: {
-        role: 'Business Development Executive',
+        role: '',
         country: 'India',
-        city: 'Delhi NCR',
+        city: '',
         workMode: 'all',
         jobType: 'all',
         postedWithin: '24h',
         checkedDate: todayISO(),
         checkedApps: {}
       },
-    // ---- 12-App Radar + Global/Remote Filters + Live Feed ----
-    function populateRadarInputs() {
-      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-      set('radar-role', state.radar.role || getActiveRoleObj().name);
-      set('radar-country', state.radar.country || 'India');
-      set('radar-city', state.radar.city || '');
-      set('radar-jobtype', state.radar.jobType || 'all');
-      set('radar-posted', state.radar.postedWithin || '24h');
-      updateWorkModePills();
-    }
+      applications: [],
+      qlog: [],
+      roadmapChecked: {},
+      customRoadmapTasks: [],
+      exitChecked: {}
+    };
 
-    function updateWorkModePills() {
-      const wm = state.radar.workMode || 'all';
-      document.querySelectorAll('.wm-pill').forEach(btn => {
-        const active = btn.dataset.wm === wm;
-        btn.className = active
-          ? 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-900 bg-slate-900 text-white shadow-sm transition cursor-pointer'
-          : 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer';
-      });
-    }
-
-    function setRadarWorkMode(mode) {
-      state.radar.workMode = mode;
-      updateWorkModePills();
-      onRadarFilterChange();
-    }
-
-    function saveRadarInputs() {
-      state.radar.role = (document.getElementById('radar-role')?.value || '').trim();
-      state.radar.country = document.getElementById('radar-country')?.value || 'Worldwide';
-      state.radar.city = (document.getElementById('radar-city')?.value || '').trim();
-      state.radar.jobType = document.getElementById('radar-jobtype')?.value || 'all';
-      state.radar.postedWithin = document.getElementById('radar-posted')?.value || '24h';
-      saveState();
-    }
-
-    function onRadarFilterChange() {
-      saveRadarInputs();
-      if (liveJobsCache.length) renderFilteredLiveJobs();
-    }
-
-    function resetRadarFilters() {
-      state.radar.role = getActiveRoleObj().name;
-      state.radar.country = 'Worldwide';
-      state.radar.city = '';
-      state.radar.workMode = 'all';
-      state.radar.jobType = 'all';
-      state.radar.postedWithin = '24h';
-      saveState();
-      populateRadarInputs();
-      if (liveJobsCache.length) renderFilteredLiveJobs();
-      showToast('Filters reset to All Countries / Worldwide.', 'info');
-    }
-
-    function openJobApp(appId) {
-      saveRadarInputs();
-      const role = state.radar.role || getActiveRoleObj().name;
-      const country = state.radar.country || 'India';
-      const city = state.radar.city || '';
-      const wm = state.radar.workMode || 'all';
-      const jt = state.radar.jobType || 'all';
-      const posted = state.radar.postedWithin || '24h';
-
-      const isRemote = wm === 'remote' || country === 'Remote Anywhere';
-      const countryLabel = (country === 'Worldwide' || country === 'Remote Anywhere') ? '' : country;
-      const locationStr = [city, countryLabel].filter(Boolean).join(', ') || (isRemote ? 'Remote' : 'India');
-
-      const qBase = [role, jt === 'contract' ? 'contract' : jt === 'internship' ? 'internship' : ''].filter(Boolean).join(' ');
-      const q = encodeURIComponent(qBase);
-      const loc = encodeURIComponent(locationStr);
-      const sRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const sCity = (city || (country === 'India' ? 'india' : countryLabel || 'remote')).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-      // LinkedIn dynamic params
-      const liWT = isRemote ? '&f_WT=2' : wm === 'hybrid' ? '&f_WT=3' : wm === 'onsite' ? '&f_WT=1' : '';
-      const liTPR = posted === '24h' ? '&f_TPR=r86400' : posted === '7d' ? '&f_TPR=r604800' : '';
-      const liJT = jt === 'fulltime' ? '&f_JT=F' : jt === 'contract' ? '&f_JT=C' : jt === 'internship' ? '&f_JT=I' : '';
-
-      // Indeed country domain + params
-      const indeedDomains = {
-        India: 'in.indeed.com', 'United States': 'www.indeed.com', 'United Kingdom': 'uk.indeed.com',
-        UAE: 'ae.indeed.com', Canada: 'ca.indeed.com', Germany: 'de.indeed.com',
-        Singapore: 'sg.indeed.com', Australia: 'au.indeed.com', Netherlands: 'nl.indeed.com', Ireland: 'ie.indeed.com'
-      };
-      const indeedHost = indeedDomains[country] || 'www.indeed.com';
-      const indeedAge = posted === '24h' ? '&fromage=1' : posted === '7d' ? '&fromage=7' : '';
-      const indeedRemote = isRemote ? '&sc=0kf%3Aattr(DSQF7)%3B' : '';
-      const indeedJT = jt === 'fulltime' ? '&jt=fulltime' : jt === 'contract' ? '&jt=contract' : jt === 'internship' ? '&jt=internship' : '';
-
-      // Naukri params
-      const naukriAge = posted === '24h' ? 'jobAge=1' : posted === '7d' ? 'jobAge=7' : '';
-      const naukriWfh = isRemote ? 'wfhType=2' : wm === 'hybrid' ? 'wfhType=3' : '';
-      const naukriQs = [naukriAge, naukriWfh].filter(Boolean).join('&');
-
-      // Google Jobs natural query
-      const gTime = posted === '24h' ? 'posted today' : posted === '7d' ? 'past week' : '';
-      const gMode = isRemote ? 'remote' : wm === 'hybrid' ? 'hybrid' : wm === 'onsite' ? 'onsite' : '';
-      const gQuery = [qBase, gMode, 'jobs', locationStr ? `in ${locationStr}` : '', gTime].filter(Boolean).join(' ');
-
-      const urls = {
-        linkedin: `https://www.linkedin.com/jobs/search/?keywords=${q}&location=${loc}${liWT}${liTPR}${liJT}`,
-        naukri: `https://www.naukri.com/${sRole}-jobs-in-${sCity}${naukriQs ? '?' + naukriQs : ''}`,
-        indeed: `https://${indeedHost}/jobs?q=${q}&l=${encodeURIComponent(isRemote && !city ? 'Remote' : locationStr)}${indeedRemote}${indeedAge}${indeedJT}`,
-        google: `https://www.google.com/search?q=${encodeURIComponent(gQuery)}&ibp=htl;jobs`,
-        wellfound: `https://wellfound.com/jobs?q=${encodeURIComponent([role, isRemote ? 'remote' : countryLabel].filter(Boolean).join(' '))}`,
-        foundit: `https://www.foundit.in/srp/results?query=${q}&locations=${encodeURIComponent(city || countryLabel || 'India')}&sort=2${isRemote ? '&workFromHome=true' : ''}`,
-        instahyre: `https://www.instahyre.com/search-jobs/?search=${q}`,
-        cutshort: `https://cutshort.io/jobs/${sRole}-jobs`,
-        hirist: `https://www.hirist.tech/search/${sRole}.html`,
-        apna: `https://apna.co/jobs?search=${encodeURIComponent([role, isRemote ? 'remote' : city].filter(Boolean).join(' '))}`,
-        shine: `https://www.shine.com/job-search/${sRole}-jobs-in-${sCity}`,
-        internshala: `https://internshala.com/${jt === 'internship' ? 'internships' : 'jobs'}/${isRemote ? 'work-from-home-' : ''}${sRole}-${jt === 'internship' ? 'internships' : 'jobs'}/`
-      };
-      window.open(urls[appId] || urls.linkedin, '_blank', 'noopener,noreferrer');
-    }
-
-    function toggleAppScanned(id) { state.radar.checkedApps[id] = !state.radar.checkedApps[id]; saveState(); renderTwelveAppsGrid(); }
-    function renderTwelveAppsGrid() {
-      const map = state.radar.checkedApps || {};
-      const count = TWELVE_JOB_APPS.filter(a => map[a.id]).length;
-      document.getElementById('apps-scanned-badge').textContent = `${count}/12 Apps Scanned Today`;
-      document.getElementById('twelve-apps-grid').innerHTML = TWELVE_JOB_APPS.map(a => `
-        <div class="rounded-xl border ${map[a.id] ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/60'} p-3 flex flex-col justify-between gap-2.5">
-          <div class="flex items-center justify-between gap-1.5">
-            <span class="text-xs font-bold text-slate-900 truncate">${a.name}</span>
-            <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${a.region === 'Global' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">${a.region}</span>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
-            <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
-              <input type="checkbox" ${map[a.id] ? 'checked' : ''} onchange="toggleAppScanned('${a.id}')" class="rounded" /> Checked
-            </label>
-            <button type="button" onclick="openJobApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold cursor-pointer">Open ↗</button>
-          </div>
-        </div>`).join('');
-    }
-
-    async function fetchAllLiveJobs() {
-      saveRadarInputs();
-      const btn = document.getElementById('refresh-live-jobs-btn');
-      const statusEl = document.getElementById('live-feed-status');
-      btn.disabled = true; btn.textContent = '⏳ Fetching...';
-      statusEl.textContent = 'Fetching live jobs from Remotive & Arbeitnow...';
-
-      const kw = (state.radar.role || '').split(/\s+/)[0] || '';
-      const list = [];
-      const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
-      const score = txt => {
-        const resW = new Set(getResumeSearchBlob(state.resume).match(/\b[a-z]{3,}\b/g) || []);
-        const jobW = [...new Set((txt.toLowerCase().match(/\b[a-z]{3,}\b/g) || []).filter(w => !STOP_WORDS.has(w)))].slice(0, 25);
-        const hits = jobW.filter(w => resW.has(w)).length;
-        return Math.min(96, Math.max(20, Math.round((hits / Math.max(1, Math.min(jobW.length, 12))) * 100)));
-      };
-
-      const fetchSafe = async (url) => {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      };
-
-      try {
-        const d1 = await fetchSafe(`https://remotive.com/api/remote-jobs?limit=35${kw ? '&search=' + encodeURIComponent(kw) : ''}`);
-        (d1.jobs || []).forEach(j => {
-          const desc = strip(j.description).slice(0, 1200);
-          const locText = j.candidate_required_location || 'Worldwide';
-          const rawType = (j.job_type || 'full_time').toLowerCase();
-          const normType = rawType.includes('contract') || rawType.includes('freelance') ? 'contract' : rawType.includes('intern') ? 'internship' : 'fulltime';
-          list.push({
-            id: 'rem_' + j.id, source: 'Remotive', title: j.title, company: j.company_name, url: j.url, desc,
-            location: locText, workMode: 'remote', jobType: normType,
-            postedMs: j.publication_date ? Date.parse(j.publication_date) : Date.now(),
-            match: score(j.title + ' ' + desc)
-          });
-        });
-      } catch (e) {}
-
-      try {
-        const d2 = await fetchSafe('https://www.arbeitnow.com/api/job-board-api');
-        (d2.data || []).slice(0, 40).forEach((j, i) => {
-          const desc = strip(j.description).slice(0, 1200);
-          const locText = j.location || (j.remote ? 'Remote' : 'Germany / Europe');
-          const types = (j.job_types || []).join(' ').toLowerCase();
-          const normType = types.includes('contract') || types.includes('freelance') ? 'contract' : types.includes('intern') ? 'internship' : 'fulltime';
-          const wm = j.remote ? 'remote' : /hybrid/i.test(locText + ' ' + desc) ? 'hybrid' : 'onsite';
-          list.push({
-            id: 'arb_' + i, source: 'Arbeitnow', title: j.title, company: j.company_name, url: j.url, desc,
-            location: locText, workMode: wm, jobType: normType,
-            postedMs: j.created_at ? j.created_at * 1000 : Date.now(),
-            match: score(j.title + ' ' + desc)
-          });
-        });
-      } catch (e) {}
-
-      liveJobsCache = list.sort((a, b) => b.match - a.match);
-      btn.disabled = false; btn.textContent = '🔄 Fetch Live Jobs';
-      renderFilteredLiveJobs();
-    }
-
-    function renderFilteredLiveJobs() {
-      const statusEl = document.getElementById('live-feed-status');
-      const grid = document.getElementById('live-jobs-grid');
-      if (!liveJobsCache.length) {
-        statusEl.textContent = 'No live jobs fetched yet or APIs are temporarily busy — click "Fetch Live Jobs" to retry or use the 12 Job Apps above.';
-        grid.innerHTML = '';
-        return;
-      }
-
-      const country = state.radar.country || 'Worldwide';
-      const city = (state.radar.city || '').toLowerCase();
-      const wm = state.radar.workMode || 'all';
-      const jt = state.radar.jobType || 'all';
-      const posted = state.radar.postedWithin || 'any';
-      const kw = (state.radar.role || '').toLowerCase().trim();
-      const now = Date.now();
-
-      const countryAliases = {
-        'India': ['india', 'bengaluru', 'bangalore', 'delhi', 'mumbai', 'pune', 'hyderabad', 'chennai', 'apac', 'asia', 'worldwide', 'anywhere'],
-        'United States': ['usa', 'united states', 'us only', 'us,', 'americas', 'worldwide', 'anywhere'],
-        'United Kingdom': ['uk', 'united kingdom', 'london', 'emea', 'europe', 'worldwide', 'anywhere'],
-        'UAE': ['uae', 'dubai', 'abu dhabi', 'middle east', 'emea', 'worldwide', 'anywhere'],
-        'Canada': ['canada', 'toronto', 'vancouver', 'americas', 'worldwide', 'anywhere'],
-        'Germany': ['germany', 'berlin', 'munich', 'deutschland', 'europe', 'eu', 'worldwide', 'anywhere'],
-        'Singapore': ['singapore', 'apac', 'asia', 'worldwide', 'anywhere'],
-        'Australia': ['australia', 'sydney', 'melbourne', 'apac', 'worldwide', 'anywhere'],
-        'Netherlands': ['netherlands', 'amsterdam', 'europe', 'eu', 'worldwide', 'anywhere'],
-        'Ireland': ['ireland', 'dublin', 'europe', 'eu', 'worldwide', 'anywhere'],
-        'Remote Anywhere': ['worldwide', 'anywhere', 'remote', 'global']
-      };
-
-      const filtered = liveJobsCache.filter(j => {
-        const locL = (j.location || '').toLowerCase();
-        const textL = `${j.title} ${j.company} ${j.desc}`.toLowerCase();
-
-        if (wm !== 'all' && j.workMode !== wm) return false;
-        if (jt !== 'all' && j.jobType !== jt) return false;
-        if (posted === '24h' && (now - j.postedMs) > 2 * 86400000) return false;
-        if (posted === '7d' && (now - j.postedMs) > 8 * 86400000) return false;
-
-        if (country !== 'Worldwide') {
-          const aliases = countryAliases[country] || [country.toLowerCase()];
-          if (!aliases.some(a => locL.includes(a))) return false;
-        }
-        if (city && !locL.includes(city) && !locL.includes('worldwide') && !locL.includes('anywhere')) return false;
-        if (kw) {
-          const tokens = kw.split(/\s+/).filter(t => t.length > 2);
-          if (tokens.length && !tokens.some(t => textL.includes(t))) return false;
-        }
-        return true;
-      });
-
-      const activeSummary = [country, city ? state.radar.city : '', wm !== 'all' ? wm.toUpperCase() : '', jt !== 'all' ? jt : ''].filter(Boolean).join(' • ');
-      statusEl.textContent = `Showing ${filtered.length} of ${liveJobsCache.length} live jobs (${activeSummary || 'All'}) — sorted by Resume Match %.`;
-
-      if (!filtered.length) {
-        grid.innerHTML = `<div class="col-span-full text-center py-8 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-500">No live feed openings matched these exact filters. Try switching <strong>Country</strong> to <em>All Countries / Worldwide</em>, <strong>Posted Within</strong> to <em>Any Time</em>, or click <strong>↺ Reset Filters</strong>.</div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.slice(0, 21).map(j => {
-        const wmBadge = j.workMode === 'remote' ? '🌍 Remote' : j.workMode === 'hybrid' ? '🏢 Hybrid' : '📍 On-site';
-        const jtLabel = j.jobType === 'contract' ? 'Contract' : j.jobType === 'internship' ? 'Internship' : 'Full-time';
-        return `
-        <div class="rounded-xl border border-slate-200 p-4 flex flex-col justify-between gap-3 hover:border-slate-300 transition">
-          <div class="space-y-1.5">
-            <div class="flex justify-between gap-2">
-              <h4 class="text-xs font-bold text-slate-900 leading-snug">${escapeHTML(j.title)}</h4>
-              <span class="shrink-0 h-fit px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${j.match}% Match</span>
-            </div>
-            <p class="text-[11px] font-semibold text-indigo-600">${escapeHTML(j.company)} • ${j.source}</p>
-            <div class="flex flex-wrap gap-1 pt-0.5">
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700">${wmBadge}</span>
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200 truncate max-w-[150px]" title="${escapeHTML(j.location)}">${escapeHTML(j.location)}</span>
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">${jtLabel}</span>
-            </div>
-          </div>
-          <div class="flex gap-1.5 pt-1">
-            <button type="button" onclick="tailorLiveJob('${j.id}')" class="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold cursor-pointer">✨ Tailor Resume</button>
-            <button type="button" onclick="trackLiveJob('${j.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer">+ Track</button>
-            <a href="${escapeHTML(j.url)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold">↗</a>
-          </div>
-        </div>`;
-      }).join('');
-    }
-      }
-      if (!Array.isArray(out.resume.experience)) out.resume.experience = deepClone(defaults.resume.experience);
-      if (!Array.isArray(out.resume.education)) out.resume.education = deepClone(defaults.resume.education);
-      return out;
-    }
+    let state = deepClone(DEFAULT_STATE);
 
     function loadLocalState() {
       try {
@@ -1616,6 +1363,9 @@
       if (!sel) return;
       sel.innerHTML = getAllRoles().map(r => `<option value="${escapeHTML(r.id)}">${escapeHTML(r.name)}${r.isCustom ? ' ★' : ''}</option>`).join('');
       sel.value = state.activeRoleId;
+      const pill = document.getElementById('detected-role-pill');
+      const activeObj = getActiveRoleObj();
+      if (pill && activeObj) pill.textContent = `Detected Role: ${activeObj.name}`;
     }
 
     function selectActiveRole(roleId) {
@@ -1637,6 +1387,8 @@
       if (state.resume.experience.length) {
         state.resume.experience[0].role = r.name;
         state.resume.experience[0].bullets = r.achievement;
+      } else {
+        state.resume.experience = [{ id: Date.now(), role: r.name, company: '', duration: '', location: state.resume.location || '', bullets: r.achievement }];
       }
       saveState();
       populateResumeForm();
@@ -1670,7 +1422,7 @@
     }
 
     // =========================================================================
-    // 6. SMART Y-COORDINATE PDF & DOCX PARSER
+    // 6. SMART Y-COORDINATE PDF & DOCX PARSER + AUTO ROLE + OLD/NEW ATS
     // =========================================================================
     function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('border-slate-900', 'bg-slate-100'); }
     function handleDragLeave(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('border-slate-900', 'bg-slate-100'); }
@@ -1703,7 +1455,6 @@
           for (let p = 1; p <= pdf.numPages; p++) {
             const page = await pdf.getPage(p);
             const content = await page.getTextContent();
-            // Group text items by Y-coordinate (tolerance ~3px) and sort by X-coordinate
             const rows = [];
             content.items.forEach(item => {
               const str = (item.str || '').trim();
@@ -1714,9 +1465,9 @@
               if (!row) { row = { y, items: [] }; rows.push(row); }
               row.items.push({ x, str });
             });
-            rows.sort((a, b) => b.y - a.y); // Top to bottom
+            rows.sort((a, b) => b.y - a.y);
             rows.forEach(r => {
-              r.items.sort((a, b) => a.x - b.x); // Left to right
+              r.items.sort((a, b) => a.x - b.x);
               const lineText = r.items.map(it => it.str).join(' ').replace(/\s+/g, ' ').trim();
               if (lineText) lines.push(lineText);
             });
@@ -1744,32 +1495,194 @@
       }
     }
 
+    function isPureDateOrYear(line) {
+      const t = String(line || '').trim();
+      return /^(?:\d{1,2}\s*\/\s*)?(?:19|20)\d{2}\s*(?:[-–—to]+\s*(?:(?:\d{1,2}\s*\/\s*)?(?:19|20)\d{2}|present|current|now|till\s*date))?$/i.test(t);
+    }
+
+    function cleanATSLine(raw, idx = 0) {
+      let s = String(raw || '').replace(/^[•\-*▪●◦▸►\s]+/, '').trim();
+      if (!s || isPureDateOrYear(s) || /^(?:19|20)\d{2}\.?$/.test(s) || s.length < 10) return '';
+      s = s.replace(/\b(Led|Built|Drove|Improved)\s+(.+?)\s+\1\s+/i, '$1 ');
+      const verbs = ['Led', 'Built', 'Drove', 'Improved', 'Streamlined', 'Managed', 'Delivered', 'Executed'];
+      const first = (s.split(/\s+/)[0] || '').replace(/[^a-zA-Z]/g, '');
+      const strong = /^(led|built|drove|improved|streamlined|managed|delivered|executed|spearheaded|increased|reduced|launched|created|achieved|oversaw|coordinated|optimized)\b/i.test(first);
+      if (strong) return s.charAt(0).toUpperCase() + s.slice(1).replace(/\.?$/, '.');
+      const rest = s.replace(/^(responsible for|worked on|handled|helped with|assisted in|did)\s+/i, '');
+      return `${verbs[idx % verbs.length]} ${rest.charAt(0).toLowerCase() + rest.slice(1).replace(/\.?$/, '.')}`;
+    }
+
+    function inferRoleFromResumeData(res) {
+      const expText = (res.experience || []).map(e => `${e.role || ''} ${e.company || ''} ${e.bullets || ''}`).join(' ');
+      const blob = `${res.headline || ''} ${expText} ${res.skills || ''} ${res.summary || ''}`.toLowerCase();
+
+      const rules = [
+        { id: 'swe', re: /\b(software\s*engineer|full\s*stack|frontend|backend|react|node\.?js|java|python|javascript|typescript|api|microservices|docker|kubernetes)\b/gi },
+        { id: 'data', re: /\b(data\s*analyst|data\s*scientist|business\s*intelligence|\bbi\b|power\s*bi|tableau|sql|pandas|numpy|etl|dashboard|analytics|mis)\b/gi },
+        { id: 'pm', re: /\b(product\s*manager|prd|roadmap|agile|scrum|jira|a\/b\s*test|user\s*retention|product\s*strategy)\b/gi },
+        { id: 'sales', re: /\b(business\s*development|b2b|sales|bde|lead\s*generation|quota|revenue|crm|zoho|salesforce|client\s*acquisition|upsell|sme)\b/gi },
+        { id: 'marketing', re: /\b(digital\s*marketing|seo|sem|meta\s*ads|google\s*ads|ga4|performance\s*marketing|campaign|content|cro)\b/gi },
+        { id: 'hr', re: /\b(human\s*resources|\bhr\b|talent\s*acquisition|recruiter|recruitment|naukri|resdex|onboarding|payroll|hris)\b/gi },
+        { id: 'finance', re: /\b(accountant|accounts|finance|fp&a|tally|gst|tds|auditing|balance\s*sheet|reconciliation|bookkeeping)\b/gi },
+        { id: 'ops', re: /\b(operations|supply\s*chain|logistics|vendor|sla|\btat\b|inventory|procurement|warehouse)\b/gi },
+        { id: 'design', re: /\b(ui\/?ux|ux\s*designer|ui\s*designer|figma|wireframe|prototype|design\s*system|usability)\b/gi },
+        { id: 'ba', re: /\b(business\s*analyst|\bba\b|\bbrd\b|\bfrd\b|user\s*stories|\buat\b|requirements|process\s*mapping)\b/gi },
+        { id: 'cs', re: /\b(customer\s*success|customer\s*support|client\s*success|\bcsat\b|\bnps\b|retention|renewal|zendesk|freshdesk|escalation)\b/gi }
+      ];
+
+      let bestId = null;
+      let bestScore = 0;
+      rules.forEach(r => {
+        const hits = blob.match(r.re);
+        const c = hits ? hits.length : 0;
+        if (c > bestScore) { bestScore = c; bestId = r.id; }
+      });
+
+      if (bestId && bestScore >= 2) {
+        state.activeRoleId = bestId;
+        const foundRole = getAllRoles().find(r => r.id === bestId);
+        state.radar.role = res.experience?.[0]?.role || foundRole?.name || '';
+        renderRoleSelector();
+        populateRadarInputs();
+        renderPrepModule();
+        return foundRole?.name || bestId;
+      }
+
+      const detectedTitle = (res.experience?.[0]?.role || res.headline || '').trim();
+      if (detectedTitle && detectedTitle.length >= 3 && detectedTitle.length <= 65 && !isPureDateOrYear(detectedTitle)) {
+        const existing = (state.customRoles || []).find(r => r.name.toLowerCase() === detectedTitle.toLowerCase());
+        if (existing) {
+          state.activeRoleId = existing.id;
+        } else {
+          const newRole = {
+            id: 'detected_' + Date.now(),
+            isCustom: true,
+            name: detectedTitle,
+            headline: res.headline || detectedTitle,
+            skills: res.skills || '',
+            achievement: (res.experience?.[0]?.bullets || '').split('\n')[0] || '',
+            summary: res.summary || '',
+            tip: `Highlight specific ${detectedTitle} outcomes and metrics in interviews.`,
+            trap: `"Walk me through your core experience as a ${detectedTitle}."`,
+            answer: (res.experience?.[0]?.bullets || '').split('\n')[0] || 'Delivered measurable results across core responsibilities.'
+          };
+          state.customRoles.push(newRole);
+          state.activeRoleId = newRole.id;
+        }
+        state.radar.role = detectedTitle;
+        renderRoleSelector();
+        populateRadarInputs();
+        renderPrepModule();
+        return detectedTitle;
+      }
+
+      return getActiveRoleObj().name;
+    }
+
+    function buildATSFriendlySnapshot(src, detectedRoleName = '') {
+      const res = deepClone(src);
+      const topRole = (res.experience?.[0]?.role || detectedRoleName || '').trim();
+      const topSkills = (res.skills || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+
+      if (!res.headline || /^resume\b/i.test(res.headline)) {
+        res.headline = topRole
+          ? (topSkills.length ? `${topRole} | ${topSkills.join(', ')}` : topRole)
+          : (detectedRoleName || 'Professional');
+      }
+
+      if (!res.summary || res.summary.trim().length < 25) {
+        res.summary = `${res.headline} with proven experience delivering reliable results, cross-functional execution, and continuous process improvement.`;
+      } else if (res.summary.length > 420) {
+        res.summary = res.summary.slice(0, 417).trim() + '...';
+      }
+
+      if (Array.isArray(res.experience)) {
+        res.experience = res.experience
+          .filter(e => !isPureDateOrYear(e.role) && (e.role || e.company || e.bullets))
+          .slice(0, 3)
+          .map(e => ({
+            ...e,
+            role: (e.role || res.headline || 'Role').trim(),
+            company: (e.company || '').trim(),
+            duration: (e.duration || '').trim(),
+            bullets: (e.bullets || '')
+              .split('\n')
+              .map((b, i) => cleanATSLine(b, i))
+              .filter(Boolean)
+              .slice(0, 4)
+              .join('\n')
+          }));
+      }
+
+      if (typeof res.skills === 'string' && res.skills.trim()) {
+        const seen = new Set();
+        res.skills = res.skills
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => {
+            if (!s) return false;
+            const k = s.toLowerCase();
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          })
+          .slice(0, 15)
+          .join(', ');
+      }
+
+      if (Array.isArray(res.education)) {
+        res.education = res.education.slice(0, 2);
+      }
+
+      return res;
+    }
+
     function parseStructuredResumeLines(lines) {
-      const fullText = lines.join('\n');
+      // Reset resume fields cleanly so stale sample/previous data never bleeds in
+      state.resume = createInitialResume();
+
+      const cleanedLines = lines
+        .map(l => String(l || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const fullText = cleanedLines.join('\n');
       const found = [];
 
-      // 1. Contact Info (Email, Indian Phone, LinkedIn, Location)
       const emailM = fullText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-      const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d{10,12}/);
-      const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
-      if (emailM) { state.resume.email = emailM[0]; found.push('Email'); }
-      if (phoneM) { state.resume.phone = phoneM[0]; found.push('Phone'); }
-      if (liM) { state.resume.linkedin = liM[0]; found.push('LinkedIn'); }
+      const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d[\d\s-]{8,13}\d/);
+      const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_.-]+/i);
+      const ghM = fullText.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_.-]+/i);
 
-      const indianCities = ['Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Gurgaon', 'Gurugram', 'Bengaluru', 'Bangalore', 'Mumbai', 'Pune', 'Hyderabad', 'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh'];
-      const cityM = indianCities.find(c => new RegExp(`\\b${c}\\b`, 'i').test(fullText));
+      if (emailM) { state.resume.email = emailM[0].trim(); found.push('Email'); }
+      if (phoneM) { state.resume.phone = phoneM[0].trim(); found.push('Phone'); }
+      if (liM) { state.resume.linkedin = liM[0].trim(); found.push('LinkedIn'); }
+      if (ghM) { state.resume.portfolio = ghM[0].trim(); found.push('Portfolio'); }
+
+      const indianCities = ['Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Greater Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad', 'Bengaluru', 'Bangalore', 'Mumbai', 'Navi Mumbai', 'Thane', 'Pune', 'Hyderabad', 'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh', 'Indore', 'Kochi', 'Lucknow'];
+      const cityM = indianCities.find(c => new RegExp(`\\b${c.replace(/\s+/g, '\\s+')}\\b`, 'i').test(fullText));
       if (cityM) { state.resume.location = cityM; found.push('Location'); }
 
-      // 2. Full Name (First clean non-contact top line)
-      const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact)$/i;
-      const topName = lines.slice(0, 8).find(l =>
-        l.length >= 3 && l.length <= 42 &&
-        !l.includes('@') && !/\d{5}/.test(l) && !/linkedin|github|http/i.test(l) &&
-        !headerBlacklist.test(l.trim()) && /^[A-Za-z\s.'-]+$/.test(l.trim())
+      const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact|projects|certifications)$/i;
+      const topNameIdx = cleanedLines.slice(0, 10).findIndex(l =>
+        l.length >= 3 && l.length <= 45 &&
+        !l.includes('@') && !/\d{4}/.test(l) && !/linkedin|github|http|www\.|@/i.test(l) &&
+        !headerBlacklist.test(l.trim()) && /^[A-Za-z][A-Za-z\s.'-]{1,42}$/.test(l.trim())
       );
-      if (topName) { state.resume.name = topName.trim(); found.push('Name'); }
 
-      // 3. Section Splitting
+      if (topNameIdx !== -1) {
+        state.resume.name = cleanedLines[topNameIdx].trim();
+        found.push('Name');
+
+        const nextTitleLine = cleanedLines.slice(topNameIdx + 1, topNameIdx + 4).find(l =>
+          l.length >= 4 && l.length <= 95 &&
+          !l.includes('@') && !/linkedin|github|http|www\.|\+91|\d{6,}/i.test(l) &&
+          !headerBlacklist.test(l.trim())
+        );
+        if (nextTitleLine) {
+          state.resume.headline = nextTitleLine.trim();
+          found.push('Title');
+        }
+      }
+
       const sectionMatchers = {
         summary: /^(professional\s+)?(summary|profile|objective|about\s+me)\s*:?$/i,
         skills: /^(core\s+|key\s+|technical\s+)?(skills|competencies|expertise|technologies)\s*:?$/i,
@@ -1781,7 +1694,7 @@
       const buckets = { summary: [], skills: [], experience: [], education: [] };
       let currentSec = null;
 
-      lines.forEach(line => {
+      cleanedLines.forEach((line, idx) => {
         const clean = line.replace(/[:\-–—]+$/, '').trim();
         let matchedSec = null;
         for (const [sec, re] of Object.entries(sectionMatchers)) {
@@ -1791,46 +1704,130 @@
           currentSec = matchedSec === 'other' ? null : matchedSec;
         } else if (currentSec && buckets[currentSec]) {
           buckets[currentSec].push(line);
+        } else if (!currentSec && idx < 7 && line.length > 50 && !line.includes('@')) {
+          buckets.summary.push(line);
         }
       });
 
+      if (!buckets.skills.length) {
+        buckets.skills = cleanedLines.filter(l =>
+          l.length >= 10 && l.length <= 260 &&
+          !/@|http|https|\b20\d{2}\b/i.test(l) &&
+          (l.match(/[,|•/]/g) || []).length >= 2 &&
+          !/\b(university|college|school|pvt|ltd|limited|inc\.|corp)\b/i.test(l)
+        ).slice(0, 3);
+      }
+
+      const eduStrictRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|school|institute|iit|nit|xii|xth|12th|10th)\b/i;
+      buckets.education = buckets.education.filter(l => eduStrictRe.test(l) && !isPureDateOrYear(l));
+      if (!buckets.education.length) {
+        buckets.education = cleanedLines.filter(l => eduStrictRe.test(l) && !isPureDateOrYear(l) && l.length < 150).slice(0, 2);
+      }
+
       if (buckets.summary.length) {
-        state.resume.summary = buckets.summary.join(' ').slice(0, 700);
+        state.resume.summary = buckets.summary.join(' ').slice(0, 700).trim();
         found.push('Summary');
       }
 
       if (buckets.skills.length) {
-        state.resume.skills = buckets.skills.join(', ').replace(/[•|▪●]/g, ',').replace(/,\s*,+/g, ', ').replace(/^,|,$/g, '').trim();
+        state.resume.skills = buckets.skills
+          .join(', ')
+          .replace(/^[a-z\s/&]+:\s*/i, '')
+          .replace(/[•|▪●◦/]+/g, ', ')
+          .replace(/,\s*,+/g, ', ')
+          .replace(/^[\s,]+|[\s,]+$/g, '')
+          .trim();
         found.push('Skills');
       }
 
-      if (buckets.experience.length) {
-        const dateRe = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\b20\d{2}\b|\b19\d{2}\b).*(?:Present|Current|20\d{2}|19\d{2})/i;
+      const dateRangeRe = /(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|now|till\s*date|\b(?:19|20)\d{2}\b)/i;
+      const companyHintRe = /\b(pvt\.?\s*ltd\.?|ltd\.?|limited|inc\.?|llp|corp\.?|corporation|technologies|solutions|services|systems|global|india|group|enterprises|consultancy|studio|labs|bank|consulting)\b/i;
+      const roleHintRe = /\b(engineer|developer|manager|executive|analyst|consultant|lead|associate|intern|specialist|designer|coordinator|director|head|officer|administrator|architect)\b/i;
+
+      const expSourceLines = buckets.experience.length ? buckets.experience : (() => {
+        const out = [];
+        for (let i = 0; i < cleanedLines.length; i++) {
+          if (dateRangeRe.test(cleanedLines[i]) && !eduStrictRe.test(cleanedLines[i])) {
+            if (i > 0 && cleanedLines[i - 1].length < 85 && !cleanedLines[i - 1].includes('@')) out.push(cleanedLines[i - 1]);
+            out.push(cleanedLines[i]);
+            for (let j = i + 1; j <= Math.min(cleanedLines.length - 1, i + 5); j++) {
+              if (dateRangeRe.test(cleanedLines[j])) break;
+              out.push(cleanedLines[j]);
+            }
+          }
+        }
+        return out;
+      })();
+
+      if (expSourceLines.length) {
         const parsedExps = [];
         let cur = null;
-        buckets.experience.forEach(line => {
-          const isBullet = /^[•\-*▪●]/.test(line);
-          const hasDate = dateRe.test(line);
-          if (!isBullet && hasDate && line.length < 110) {
-            if (cur) parsedExps.push(cur);
-            const dateMatch = line.match(dateRe);
+
+        for (let i = 0; i < expSourceLines.length; i++) {
+          const line = expSourceLines[i];
+          if (isPureDateOrYear(line)) continue;
+          const isBullet = /^[•\-*▪●◦▸►]/.test(line);
+          const hasDate = dateRangeRe.test(line);
+
+          if (!isBullet && hasDate && line.length < 135) {
+            const dateMatch = line.match(dateRangeRe);
             const duration = dateMatch ? dateMatch[0].trim() : '';
-            const rest = line.replace(duration, '').replace(/[|\-–—]+$/, '').trim();
-            const parts = rest.split(/\s*[–—|\-,]\s*/).filter(Boolean);
+            const rest = line.replace(duration, '').replace(/^[|•\-–—,()\s]+|[|•\-–—,()\s]+$/g, '').trim();
+            const parts = rest.split(/\s*(?:[–—|•]|\s+at\s+|\s*-\s*)\s*/i).map(p => p.trim()).filter(Boolean);
+
+            let role = parts[0] || '';
+            let company = parts[1] || '';
+            if (parts.length >= 2 && companyHintRe.test(parts[0]) && !companyHintRe.test(parts[1])) {
+              company = parts[0];
+              role = parts.slice(1).join(' — ');
+            } else if (parts.length === 1 && companyHintRe.test(parts[0])) {
+              company = parts[0];
+              role = '';
+            }
+
+            const next = expSourceLines[i + 1];
+            if (next && !/^[•\-*▪●◦▸►]/.test(next) && !dateRangeRe.test(next) && !isPureDateOrYear(next) && next.length < 95) {
+              if (!company && companyHintRe.test(next)) { company = next; i++; }
+              else if (!role && roleHintRe.test(next)) { role = next; i++; }
+            }
+
+            if (cur && !cur.bullets && (!cur.company || !cur.role)) {
+              role = role || cur.role;
+              company = company || cur.company;
+              parsedExps.pop();
+            }
+            if (cur) parsedExps.push(cur);
             cur = {
               id: Date.now() + parsedExps.length,
-              role: parts[0] || rest || 'Role',
-              company: parts[1] || '',
+              role: role || state.resume.headline || 'Role',
+              company,
               duration,
-              location: '',
+              location: state.resume.location || '',
+              bullets: ''
+            };
+          } else if (!isBullet && (companyHintRe.test(line) || roleHintRe.test(line)) && line.length < 95 && (!cur || cur.bullets)) {
+            if (cur) parsedExps.push(cur);
+            const isComp = companyHintRe.test(line);
+            cur = {
+              id: Date.now() + parsedExps.length,
+              role: isComp ? '' : line,
+              company: isComp ? line : '',
+              duration: '',
+              location: state.resume.location || '',
               bullets: ''
             };
           } else {
-            if (!cur) cur = { id: Date.now(), role: state.resume.headline || 'Experience', company: '', duration: '', location: '', bullets: '' };
-            const cleanB = line.replace(/^[•\-*▪●]\s*/, '').trim();
-            cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+            if (!cur) cur = { id: Date.now(), role: state.resume.headline || 'Experience', company: '', duration: '', location: state.resume.location || '', bullets: '' };
+            if (!cur.company && companyHintRe.test(line) && line.length < 90) cur.company = line;
+            else if (!cur.role && roleHintRe.test(line) && line.length < 90) cur.role = line;
+            else {
+              const cleanB = line.replace(/^[•\-*▪●◦▸►]+\s*/, '').trim();
+              if (cleanB && !isPureDateOrYear(cleanB)) {
+                cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+              }
+            }
           }
-        });
+        }
         if (cur) parsedExps.push(cur);
         if (parsedExps.length) {
           state.resume.experience = parsedExps;
@@ -1839,19 +1836,117 @@
       }
 
       if (buckets.education.length) {
-        state.resume.education = buckets.education.slice(0, 3).map((l, i) => {
-          const yr = (l.match(/\b(19|20)\d{2}(?:\s*[-–]\s*(?:20\d{2}|Present))?\b/) || [''])[0];
-          const rest = l.replace(yr, '').replace(/[,|\-–]+$/, '').trim();
-          const parts = rest.split(/\s*[,|\-–]\s*/);
+        state.resume.education = buckets.education.slice(0, 2).map((l, i) => {
+          const yr = (l.match(/\b(?:19|20)\d{2}(?:\s*[-–]\s*(?:(?:19|20)\d{2}|present|current))?\b/i) || [''])[0].trim();
+          const rest = l.replace(yr, '').replace(/[,|\-–•]+$/, '').trim();
+          const parts = rest.split(/\s*[,|\-–•]\s*/).map(p => p.trim()).filter(Boolean);
           return { id: Date.now() + 50 + i, degree: parts[0] || rest, school: parts.slice(1).join(', '), year: yr };
         });
         found.push('Education');
       }
 
+      // Save Old Extracted snapshot, then build New ATS version + detect role from resume
+      state.oldExtractedResume = deepClone(state.resume);
+      const detectedRoleName = inferRoleFromResumeData(state.resume);
+      if (detectedRoleName) found.push(`Role: ${detectedRoleName}`);
+
+      state.resume = buildATSFriendlySnapshot(state.resume, detectedRoleName);
+      state.newAtsResume = deepClone(state.resume);
+      state.activeResumeView = 'new';
+
+      const panel = document.getElementById('parsed-personalize-panel');
+      const countEl = document.getElementById('parsed-found-count');
+      if (panel) panel.classList.remove('hidden');
+      if (countEl) countEl.textContent = `Extracted: ${found.join(' • ')}`;
+      updateOldNewToggleButtons('new');
+
       saveState();
       populateResumeForm();
       refreshOptimizerFromResume(true);
       return found.length ? found : ['Basic Text'];
+    }
+
+    function switchResumeVersionView(mode) {
+      state.activeResumeView = mode;
+      if (mode === 'old' && state.oldExtractedResume) {
+        state.resume = deepClone(state.oldExtractedResume);
+      } else if (mode === 'new' && state.newAtsResume) {
+        state.resume = deepClone(state.newAtsResume);
+      }
+      saveState();
+      populateResumeForm();
+      refreshOptimizerFromResume(true);
+      updateOldNewToggleButtons(mode);
+    }
+
+    function updateOldNewToggleButtons(mode = 'new') {
+      const oldBtn = document.getElementById('btn-view-old-resume');
+      const newBtn = document.getElementById('btn-view-new-resume');
+      if (oldBtn && newBtn) {
+        oldBtn.className = mode === 'old'
+          ? 'px-3 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-bold cursor-pointer'
+          : 'px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-300 text-[11px] font-bold cursor-pointer';
+        newBtn.className = mode === 'new'
+          ? 'px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold cursor-pointer'
+          : 'px-3 py-1 rounded-lg bg-white text-emerald-900 border border-emerald-300 text-[11px] font-bold cursor-pointer';
+      }
+    }
+
+    function applyPersonalizedAddons() {
+      const newTitle = (document.getElementById('perso-title')?.value || '').trim();
+      const newCompany = (document.getElementById('perso-company')?.value || '').trim();
+      const extraSkills = (document.getElementById('perso-skills')?.value || '').trim();
+      const extraNote = (document.getElementById('perso-extra-note')?.value || '').trim();
+
+      if (!newTitle && !newCompany && !extraSkills && !extraNote) {
+        showToast('Kuch add karne ke liye kam se kam ek field bharo.', 'warning');
+        return;
+      }
+
+      if (newTitle) {
+        state.resume.headline = newTitle;
+        if (state.resume.experience?.[0]) state.resume.experience[0].role = newTitle;
+      }
+
+      if (newCompany) {
+        state.resume.experience = state.resume.experience || [];
+        state.resume.experience.unshift({
+          id: Date.now(),
+          role: newTitle || state.resume.headline || 'Role',
+          company: newCompany,
+          duration: 'Recent',
+          location: state.resume.location || '',
+          bullets: extraNote ? cleanATSLine(extraNote, 0) : 'Delivered key deliverables and targets on schedule.'
+        });
+      } else if (extraNote) {
+        const polished = cleanATSLine(extraNote, 1) || extraNote;
+        if (state.resume.experience?.[0]) {
+          state.resume.experience[0].bullets = state.resume.experience[0].bullets
+            ? `${state.resume.experience[0].bullets}\n${polished}`
+            : polished;
+        } else {
+          state.resume.summary = `${state.resume.summary || ''} ${polished}`.trim();
+        }
+      }
+
+      if (extraSkills) {
+        state.resume.skills = state.resume.skills ? `${state.resume.skills}, ${extraSkills}` : extraSkills;
+      }
+
+      state.resume = buildATSFriendlySnapshot(state.resume, getActiveRoleObj().name);
+      state.newAtsResume = deepClone(state.resume);
+      state.activeResumeView = 'new';
+      updateOldNewToggleButtons('new');
+
+      ['perso-title', 'perso-company', 'perso-skills', 'perso-extra-note'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      saveState();
+      populateResumeForm();
+      refreshOptimizerFromResume(true);
+      showToast('✨ Personalized changes New ATS Resume mein add ho gaye!', 'success');
     }
 
     // =========================================================================
@@ -1875,6 +1970,12 @@
       set('gemini-api-key', localStorage.getItem(GEMINI_KEY_STORE) || '');
       const colorInp = document.getElementById('custom-accent-color');
       if (colorInp) colorInp.value = state.accentColor || '#1e3a8a';
+
+      const panel = document.getElementById('parsed-personalize-panel');
+      if (panel && (state.oldExtractedResume || state.newAtsResume)) {
+        panel.classList.remove('hidden');
+        updateOldNewToggleButtons(state.activeResumeView || 'new');
+      }
 
       renderExperienceEditor();
       renderEducationEditor();
@@ -1910,7 +2011,6 @@
       showToast('✨ Impact Summary generated!', 'success');
     }
 
-    // 1-Click Recruiter Impact Bullet Enhancer (Action Verb + Metric + Business Outcome)
     function enhanceExperienceBullets(idx) {
       const exp = state.resume.experience[idx];
       if (!exp) return;
@@ -1935,16 +2035,13 @@
         ];
       } else {
         upgraded = rawLines.map((line, i) => {
-          // If bullet already has a strong % or number, polish its opening verb
           const hasMetric = /\d+%|\d+\+|₹|\$/.test(line);
           const cleaned = line
             .replace(/^(responsible for|worked on|helped with|handled|managed|did|assisted in)\s+/i, '')
             .replace(/\.$/, '');
           const verb = actionVerbs[i % actionVerbs.length];
           const formatted = cleaned.charAt(0).toLowerCase() + cleaned.slice(1);
-          if (hasMetric) {
-            return `${verb} ${formatted}.`;
-          }
+          if (hasMetric) return `${verb} ${formatted}.`;
           return `${verb} ${formatted}, ${outcomes[i % outcomes.length]}`;
         });
       }
@@ -2385,7 +2482,7 @@
     }
 
     // =========================================================================
-    // 10. TAB 2: OPTIMIZER & 12-APP LIVE JOB RADAR
+    // 10. TAB 2: OPTIMIZER & 12-APP LIVE JOB RADAR (WITH GLOBAL/INDIA FILTERS)
     // =========================================================================
     function refreshOptimizerFromResume(silent = false) {
       const r = state.resume;
@@ -2447,38 +2544,117 @@
     }
     function toggleOptCheck(mapName, id) { state.optimizer[mapName][id] = !state.optimizer[mapName][id]; saveState(); renderOptimizerUI(); }
 
-    // ---- 12-App Radar + Live Feed ----
-    function populateRadarInputs() {
-      document.getElementById('radar-role').value = state.radar.role || getActiveRoleObj().name;
-      document.getElementById('radar-city').value = state.radar.city || 'Delhi NCR';
+    function updateWorkModePills() {
+      const activeMode = (state.radar && state.radar.workMode) || 'all';
+      document.querySelectorAll('.wm-pill').forEach((btn) => {
+        const isMatch = btn.dataset.wm === activeMode;
+        btn.className = isMatch
+          ? 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-900 bg-slate-900 text-white transition cursor-pointer'
+          : 'wm-pill px-3 py-1 rounded-full text-[11px] font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 transition cursor-pointer';
+      });
     }
+
+    function populateRadarInputs() {
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set('radar-role', state.radar.role || state.resume.experience?.[0]?.role || getActiveRoleObj().name);
+      set('radar-country', state.radar.country || 'India');
+      set('radar-city', state.radar.city || state.resume.location || '');
+      set('radar-jobtype', state.radar.jobType || 'all');
+      set('radar-posted', state.radar.postedWithin || '24h');
+      updateWorkModePills();
+    }
+
+    function setRadarWorkMode(mode) {
+      state.radar.workMode = mode;
+      updateWorkModePills();
+      onRadarFilterChange();
+    }
+
     function saveRadarInputs() {
-      state.radar.role = document.getElementById('radar-role').value.trim();
-      state.radar.city = document.getElementById('radar-city').value;
+      state.radar.role = (document.getElementById('radar-role')?.value || '').trim();
+      state.radar.country = document.getElementById('radar-country')?.value || 'Worldwide';
+      state.radar.city = (document.getElementById('radar-city')?.value || '').trim();
+      state.radar.jobType = document.getElementById('radar-jobtype')?.value || 'all';
+      state.radar.postedWithin = document.getElementById('radar-posted')?.value || '24h';
       saveState();
     }
+
+    function onRadarFilterChange() {
+      saveRadarInputs();
+      if (liveJobsCache.length) renderFilteredLiveJobs();
+    }
+
+    function resetRadarFilters() {
+      state.radar.role = getActiveRoleObj().name;
+      state.radar.country = 'Worldwide';
+      state.radar.city = '';
+      state.radar.workMode = 'all';
+      state.radar.jobType = 'all';
+      state.radar.postedWithin = '24h';
+      saveState();
+      populateRadarInputs();
+      if (liveJobsCache.length) renderFilteredLiveJobs();
+      showToast('Filters reset to All Countries / Worldwide.', 'info');
+    }
+
     function openJobApp(appId) {
       saveRadarInputs();
       const role = state.radar.role || getActiveRoleObj().name;
-      const city = state.radar.city || 'Delhi NCR';
-      const q = encodeURIComponent(role), loc = encodeURIComponent(city);
-      const sRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-'), sCity = city.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const country = state.radar.country || 'India';
+      const city = state.radar.city || '';
+      const wm = state.radar.workMode || 'all';
+      const jt = state.radar.jobType || 'all';
+      const posted = state.radar.postedWithin || '24h';
+
+      const isRemote = wm === 'remote' || country === 'Remote Anywhere';
+      const countryLabel = (country === 'Worldwide' || country === 'Remote Anywhere') ? '' : country;
+      const locationStr = [city, countryLabel].filter(Boolean).join(', ') || (isRemote ? 'Remote' : 'India');
+
+      const qBase = [role, jt === 'contract' ? 'contract' : jt === 'internship' ? 'internship' : ''].filter(Boolean).join(' ');
+      const q = encodeURIComponent(qBase);
+      const loc = encodeURIComponent(locationStr);
+      const sRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const sCity = (city || (country === 'India' ? 'india' : countryLabel || 'remote')).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      const liWT = isRemote ? '&f_WT=2' : wm === 'hybrid' ? '&f_WT=3' : wm === 'onsite' ? '&f_WT=1' : '';
+      const liTPR = posted === '24h' ? '&f_TPR=r86400' : posted === '7d' ? '&f_TPR=r604800' : '';
+      const liJT = jt === 'fulltime' ? '&f_JT=F' : jt === 'contract' ? '&f_JT=C' : jt === 'internship' ? '&f_JT=I' : '';
+
+      const indeedDomains = {
+        India: 'in.indeed.com', 'United States': 'www.indeed.com', 'United Kingdom': 'uk.indeed.com',
+        UAE: 'ae.indeed.com', Canada: 'ca.indeed.com', Germany: 'de.indeed.com',
+        Singapore: 'sg.indeed.com', Australia: 'au.indeed.com', Netherlands: 'nl.indeed.com', Ireland: 'ie.indeed.com'
+      };
+      const indeedHost = indeedDomains[country] || 'www.indeed.com';
+      const indeedAge = posted === '24h' ? '&fromage=1' : posted === '7d' ? '&fromage=7' : '';
+      const indeedRemote = isRemote ? '&sc=0kf%3Aattr(DSQF7)%3B' : '';
+      const indeedJT = jt === 'fulltime' ? '&jt=fulltime' : jt === 'contract' ? '&jt=contract' : jt === 'internship' ? '&jt=internship' : '';
+
+      const naukriAge = posted === '24h' ? 'jobAge=1' : posted === '7d' ? 'jobAge=7' : '';
+      const naukriWfh = isRemote ? 'wfhType=2' : wm === 'hybrid' ? 'wfhType=3' : '';
+      const naukriQs = [naukriAge, naukriWfh].filter(Boolean).join('&');
+
+      const gTime = posted === '24h' ? 'posted today' : posted === '7d' ? 'past week' : '';
+      const gMode = isRemote ? 'remote' : wm === 'hybrid' ? 'hybrid' : wm === 'onsite' ? 'onsite' : '';
+      const gQuery = [qBase, gMode, 'jobs', locationStr ? `in ${locationStr}` : '', gTime].filter(Boolean).join(' ');
+
       const urls = {
-        naukri: `https://www.naukri.com/${sRole}-jobs-in-${sCity}?jobAge=1`,
-        linkedin: `https://www.linkedin.com/jobs/search/?keywords=${q}&location=${loc}&f_TPR=r86400`,
-        indeed: `https://in.indeed.com/jobs?q=${q}&l=${loc}&fromage=1`,
-        foundit: `https://www.foundit.in/srp/results?query=${q}&locations=${loc}&sort=2`,
+        linkedin: `https://www.linkedin.com/jobs/search/?keywords=${q}&location=${loc}${liWT}${liTPR}${liJT}`,
+        naukri: `https://www.naukri.com/${sRole}-jobs-in-${sCity}${naukriQs ? '?' + naukriQs : ''}`,
+        indeed: `https://${indeedHost}/jobs?q=${q}&l=${encodeURIComponent(isRemote && !city ? 'Remote' : locationStr)}${indeedRemote}${indeedAge}${indeedJT}`,
+        google: `https://www.google.com/search?q=${encodeURIComponent(gQuery)}&ibp=htl;jobs`,
+        wellfound: `https://wellfound.com/jobs?q=${encodeURIComponent([role, isRemote ? 'remote' : countryLabel].filter(Boolean).join(' '))}`,
+        foundit: `https://www.foundit.in/srp/results?query=${q}&locations=${encodeURIComponent(city || countryLabel || 'India')}&sort=2${isRemote ? '&workFromHome=true' : ''}`,
         instahyre: `https://www.instahyre.com/search-jobs/?search=${q}`,
         cutshort: `https://cutshort.io/jobs/${sRole}-jobs`,
         hirist: `https://www.hirist.tech/search/${sRole}.html`,
-        wellfound: `https://wellfound.com/jobs?q=${q}`,
-        apna: `https://apna.co/jobs?search=${q}`,
+        apna: `https://apna.co/jobs?search=${encodeURIComponent([role, isRemote ? 'remote' : city].filter(Boolean).join(' '))}`,
         shine: `https://www.shine.com/job-search/${sRole}-jobs-in-${sCity}`,
-        internshala: `https://internshala.com/jobs/${sRole}-jobs/`,
-        google: `https://www.google.com/search?q=${encodeURIComponent(role + ' jobs in ' + city)}&ibp=htl;jobs`
+        internshala: `https://internshala.com/${jt === 'internship' ? 'internships' : 'jobs'}/${isRemote ? 'work-from-home-' : ''}${sRole}-${jt === 'internship' ? 'internships' : 'jobs'}/`
       };
       window.open(urls[appId] || urls.linkedin, '_blank', 'noopener,noreferrer');
     }
+
     function toggleAppScanned(id) { state.radar.checkedApps[id] = !state.radar.checkedApps[id]; saveState(); renderTwelveAppsGrid(); }
     function renderTwelveAppsGrid() {
       const map = state.radar.checkedApps || {};
@@ -2486,21 +2662,27 @@
       document.getElementById('apps-scanned-badge').textContent = `${count}/12 Apps Scanned Today`;
       document.getElementById('twelve-apps-grid').innerHTML = TWELVE_JOB_APPS.map(a => `
         <div class="rounded-xl border ${map[a.id] ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/60'} p-3 flex flex-col justify-between gap-2.5">
-          <div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">${a.name}</span><span class="text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">${a.badge}</span></div>
+          <div class="flex items-center justify-between gap-1.5">
+            <span class="text-xs font-bold text-slate-900 truncate">${a.name}</span>
+            <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${a.region === 'Global' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">${a.region}</span>
+          </div>
           <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
               <input type="checkbox" ${map[a.id] ? 'checked' : ''} onchange="toggleAppScanned('${a.id}')" class="rounded" /> Checked
             </label>
-            <button type="button" onclick="openJobApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-bold cursor-pointer">Open ↗</button>
+            <button type="button" onclick="openJobApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold cursor-pointer">Open ↗</button>
           </div>
         </div>`).join('');
     }
 
     async function fetchAllLiveJobs() {
+      saveRadarInputs();
       const btn = document.getElementById('refresh-live-jobs-btn');
       const statusEl = document.getElementById('live-feed-status');
       btn.disabled = true; btn.textContent = '⏳ Fetching...';
-      const kw = (state.radar.role || 'sales').split(/\s+/)[0];
+      statusEl.textContent = 'Fetching live jobs from Remotive & Arbeitnow...';
+
+      const kw = (state.radar.role || '').split(/\s+/)[0] || '';
       const list = [];
       const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
       const score = txt => {
@@ -2509,37 +2691,137 @@
         const hits = jobW.filter(w => resW.has(w)).length;
         return Math.min(96, Math.max(20, Math.round((hits / Math.max(1, Math.min(jobW.length, 12))) * 100)));
       };
+
+      const fetchSafe = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      };
+
       try {
-        const r1 = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(kw)}&limit=12`);
-        if (r1.ok) (await r1.json()).jobs?.forEach(j => {
-          const desc = strip(j.description).slice(0, 1000);
-          list.push({ id: 'rem_' + j.id, source: 'Remotive', title: j.title, company: j.company_name, url: j.url, desc, match: score(j.title + ' ' + desc) });
+        const d1 = await fetchSafe(`https://remotive.com/api/remote-jobs?limit=35${kw ? '&search=' + encodeURIComponent(kw) : ''}`);
+        (d1.jobs || []).forEach(j => {
+          const desc = strip(j.description).slice(0, 1200);
+          const locText = j.candidate_required_location || 'Worldwide';
+          const rawType = (j.job_type || 'full_time').toLowerCase();
+          const normType = rawType.includes('contract') || rawType.includes('freelance') ? 'contract' : rawType.includes('intern') ? 'internship' : 'fulltime';
+          list.push({
+            id: 'rem_' + j.id, source: 'Remotive', title: j.title, company: j.company_name, url: j.url, desc,
+            location: locText, workMode: 'remote', jobType: normType,
+            postedMs: j.publication_date ? Date.parse(j.publication_date) : Date.now(),
+            match: score(j.title + ' ' + desc)
+          });
         });
       } catch (e) {}
+
       try {
-        const r2 = await fetch('https://www.arbeitnow.com/api/job-board-api');
-        if (r2.ok) (await r2.json()).data?.slice(0, 12).forEach((j, i) => {
-          const desc = strip(j.description).slice(0, 1000);
-          list.push({ id: 'arb_' + i, source: 'Arbeitnow', title: j.title, company: j.company_name, url: j.url, desc, match: score(j.title + ' ' + desc) });
+        const d2 = await fetchSafe('https://www.arbeitnow.com/api/job-board-api');
+        (d2.data || []).slice(0, 40).forEach((j, i) => {
+          const desc = strip(j.description).slice(0, 1200);
+          const locText = j.location || (j.remote ? 'Remote' : 'Germany / Europe');
+          const types = (j.job_types || []).join(' ').toLowerCase();
+          const normType = types.includes('contract') || types.includes('freelance') ? 'contract' : types.includes('intern') ? 'internship' : 'fulltime';
+          const wm = j.remote ? 'remote' : /hybrid/i.test(locText + ' ' + desc) ? 'hybrid' : 'onsite';
+          list.push({
+            id: 'arb_' + i, source: 'Arbeitnow', title: j.title, company: j.company_name, url: j.url, desc,
+            location: locText, workMode: wm, jobType: normType,
+            postedMs: j.created_at ? j.created_at * 1000 : Date.now(),
+            match: score(j.title + ' ' + desc)
+          });
         });
       } catch (e) {}
 
       liveJobsCache = list.sort((a, b) => b.match - a.match);
-      statusEl.textContent = list.length ? `Loaded ${list.length} live jobs, sorted by Resume Match %.` : 'APIs busy—use the 12 Job Apps above.';
       btn.disabled = false; btn.textContent = '🔄 Fetch Live Jobs';
-      document.getElementById('live-jobs-grid').innerHTML = liveJobsCache.slice(0, 18).map(j => `
-        <div class="rounded-xl border border-slate-200 p-4 flex flex-col justify-between gap-3">
-          <div>
-            <div class="flex justify-between gap-2"><h4 class="text-xs font-bold text-slate-900">${escapeHTML(j.title)}</h4><span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${j.match}%</span></div>
-            <p class="text-[11px] font-semibold text-indigo-600 mt-1">${escapeHTML(j.company)} • ${j.source}</p>
-          </div>
-          <div class="flex gap-1.5">
-            <button type="button" onclick="tailorLiveJob('${j.id}')" class="flex-1 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold cursor-pointer">✨ Tailor</button>
-            <button type="button" onclick="trackLiveJob('${j.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer">+ Track</button>
-            <a href="${escapeHTML(j.url)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold">↗</a>
-          </div>
-        </div>`).join('');
+      renderFilteredLiveJobs();
     }
+
+    function renderFilteredLiveJobs() {
+      const statusEl = document.getElementById('live-feed-status');
+      const grid = document.getElementById('live-jobs-grid');
+      if (!liveJobsCache.length) {
+        statusEl.textContent = 'No live jobs fetched yet or APIs are temporarily busy — click "Fetch Live Jobs" to retry or use the 12 Job Apps above.';
+        grid.innerHTML = '';
+        return;
+      }
+
+      const country = state.radar.country || 'Worldwide';
+      const city = (state.radar.city || '').toLowerCase();
+      const wm = state.radar.workMode || 'all';
+      const jt = state.radar.jobType || 'all';
+      const posted = state.radar.postedWithin || 'any';
+      const kw = (state.radar.role || '').toLowerCase().trim();
+      const now = Date.now();
+
+      const countryAliases = {
+        'India': ['india', 'bengaluru', 'bangalore', 'delhi', 'mumbai', 'pune', 'hyderabad', 'chennai', 'apac', 'asia', 'worldwide', 'anywhere'],
+        'United States': ['usa', 'united states', 'us only', 'us,', 'americas', 'worldwide', 'anywhere'],
+        'United Kingdom': ['uk', 'united kingdom', 'london', 'emea', 'europe', 'worldwide', 'anywhere'],
+        'UAE': ['uae', 'dubai', 'abu dhabi', 'middle east', 'emea', 'worldwide', 'anywhere'],
+        'Canada': ['canada', 'toronto', 'vancouver', 'americas', 'worldwide', 'anywhere'],
+        'Germany': ['germany', 'berlin', 'munich', 'deutschland', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Singapore': ['singapore', 'apac', 'asia', 'worldwide', 'anywhere'],
+        'Australia': ['australia', 'sydney', 'melbourne', 'apac', 'worldwide', 'anywhere'],
+        'Netherlands': ['netherlands', 'amsterdam', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Ireland': ['ireland', 'dublin', 'europe', 'eu', 'worldwide', 'anywhere'],
+        'Remote Anywhere': ['worldwide', 'anywhere', 'remote', 'global']
+      };
+
+      const filtered = liveJobsCache.filter(j => {
+        const locL = (j.location || '').toLowerCase();
+        const textL = `${j.title} ${j.company} ${j.desc}`.toLowerCase();
+
+        if (wm !== 'all' && j.workMode !== wm) return false;
+        if (jt !== 'all' && j.jobType !== jt) return false;
+        if (posted === '24h' && (now - j.postedMs) > 2 * 86400000) return false;
+        if (posted === '7d' && (now - j.postedMs) > 8 * 86400000) return false;
+
+        if (country !== 'Worldwide') {
+          const aliases = countryAliases[country] || [country.toLowerCase()];
+          if (!aliases.some(a => locL.includes(a))) return false;
+        }
+        if (city && !locL.includes(city) && !locL.includes('worldwide') && !locL.includes('anywhere')) return false;
+        if (kw) {
+          const tokens = kw.split(/\s+/).filter(t => t.length > 2);
+          if (tokens.length && !tokens.some(t => textL.includes(t))) return false;
+        }
+        return true;
+      });
+
+      const activeSummary = [country, city ? state.radar.city : '', wm !== 'all' ? wm.toUpperCase() : '', jt !== 'all' ? jt : ''].filter(Boolean).join(' • ');
+      statusEl.textContent = `Showing ${filtered.length} of ${liveJobsCache.length} live jobs (${activeSummary || 'All'}) — sorted by Resume Match %.`;
+
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="col-span-full text-center py-8 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-500">No live feed openings matched these exact filters. Try switching <strong>Country</strong> to <em>All Countries / Worldwide</em>, <strong>Posted Within</strong> to <em>Any Time</em>, or click <strong>↺ Reset Filters</strong>.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.slice(0, 21).map(j => {
+        const wmBadge = j.workMode === 'remote' ? '🌍 Remote' : j.workMode === 'hybrid' ? '🏢 Hybrid' : '📍 On-site';
+        const jtLabel = j.jobType === 'contract' ? 'Contract' : j.jobType === 'internship' ? 'Internship' : 'Full-time';
+        return `
+        <div class="rounded-xl border border-slate-200 p-4 flex flex-col justify-between gap-3 hover:border-slate-300 transition">
+          <div class="space-y-1.5">
+            <div class="flex justify-between gap-2">
+              <h4 class="text-xs font-bold text-slate-900 leading-snug">${escapeHTML(j.title)}</h4>
+              <span class="shrink-0 h-fit px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${j.match}% Match</span>
+            </div>
+            <p class="text-[11px] font-semibold text-indigo-600">${escapeHTML(j.company)} • ${j.source}</p>
+            <div class="flex flex-wrap gap-1 pt-0.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700">${wmBadge}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200 truncate max-w-[150px]" title="${escapeHTML(j.location)}">${escapeHTML(j.location)}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">${jtLabel}</span>
+            </div>
+          </div>
+          <div class="flex gap-1.5 pt-1">
+            <button type="button" onclick="tailorLiveJob('${j.id}')" class="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold cursor-pointer">✨ Tailor Resume</button>
+            <button type="button" onclick="trackLiveJob('${j.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer">+ Track</button>
+            <a href="${escapeHTML(j.url)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold">↗</a>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     function tailorLiveJob(id) {
       const j = liveJobsCache.find(x => x.id === id);
       if (!j) return;
@@ -2670,7 +2952,7 @@
         { title: 'Layoff Explanation (HR Call)', body: `Hi [HR Name], my recent role as ${r.name} was impacted by an organization-wide restructuring. My individual performance remained strong—especially in ${skills}. Because of this transition, I am available immediately and excited to contribute at [Company].` },
         { title: 'Referral Outreach (LinkedIn / WhatsApp)', body: `Hi [Name], hope you’re doing well! I’m exploring ${r.name} roles following a restructuring. I saw [Company] is hiring for [Role]—given my experience in ${skills}, would you be open to referring me? Happy to send my 1-page resume right away. Thanks! — ${name}` }
       ];
-      document.getElementById('scripts-grid').innerHTML = scripts.map((s, i) => `
+      document.getElementById('scripts-grid').innerHTML = scripts.map(s => `
         <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/60 flex flex-col justify-between gap-3">
           <div><h4 class="text-xs font-extrabold text-slate-900 mb-1.5">${s.title}</h4><p class="text-xs text-slate-600 leading-relaxed">${escapeHTML(s.body)}</p></div>
           <button type="button" onclick="copyTextSafe(${JSON.stringify(s.body)}, 'Script copied!')" class="self-start px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold cursor-pointer">📋 Copy</button>
