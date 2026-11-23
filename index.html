@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dhanisha’s Career Studio — ATS Resume & Cover Letter Builder</title>
+  <title>Dhanisha’s Career Studio — Complete ATS Resume & Career Workspace</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,9 +19,24 @@
     .resume-paper {
       width: 100%;
       max-width: 794px;
-      min-height: 1040px;
+      min-height: 1020px;
       background: #ffffff;
       box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.12);
+    }
+    .resume-paper.compact-2pg p,
+    .resume-paper.compact-2pg li {
+      font-size: 12px !important;
+      line-height: 1.42 !important;
+    }
+    .tpl-minimalist .resume-heading {
+      border-bottom: 1px solid #cbd5e1 !important;
+      letter-spacing: 0.12em !important;
+    }
+    .tpl-corporate .resume-header-box {
+      background: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
     }
     @media print {
       body * {
@@ -39,12 +53,13 @@
         max-width: 100% !important;
         min-height: auto !important;
         box-shadow: none !important;
+        border: none !important;
         margin: 0 !important;
-        padding: 24px 32px !important;
+        padding: 18px 26px !important;
       }
       @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 8mm;
       }
     }
   </style>
@@ -53,35 +68,51 @@
 
   <!-- TOP HEADER -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-slate-900 text-white font-extrabold flex items-center justify-center shrink-0">D</div>
         <div class="min-w-0">
           <div class="flex items-center gap-2">
             <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 truncate">Dhanisha’s Career Studio</h1>
-            <span class="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">ATS Ready</span>
+            <span class="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">100% Free Forever</span>
           </div>
-          <p class="text-[11px] text-slate-500 truncate">Auto Role Detection • Old vs New ATS • Personalized Edit</p>
+          <p class="text-[11px] text-slate-500 truncate">Auto Role Detection • Old vs New ATS • Jobs, Tracker & Interview Prep</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-2 flex-wrap">
         <select id="active-role-select" onchange="onRoleDropdownChange(this.value)" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </select>
         <button type="button" onclick="promptNewCustomRole()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer">
-          + Role
+          + Add Role
         </button>
         <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition cursor-pointer">
           ⬇ Download PDF
         </button>
       </div>
     </div>
+
+    <!-- MAIN FEATURE TABS -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-2.5 flex items-center gap-2 overflow-x-auto">
+      <button type="button" data-studio-tab="resume" onclick="switchStudioTab('resume')" class="studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white cursor-pointer shrink-0">
+        📄 Resume & Cover
+      </button>
+      <button type="button" data-studio-tab="jobs" onclick="switchStudioTab('jobs')" class="studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer shrink-0">
+        🎯 Jobs & Profile
+      </button>
+      <button type="button" data-studio-tab="tracker" onclick="switchStudioTab('tracker')" class="studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer shrink-0">
+        📊 Tracker & CTC
+      </button>
+      <button type="button" data-studio-tab="prep" onclick="switchStudioTab('prep')" class="studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer shrink-0">
+        🧭 Prep & Plan
+      </button>
+    </div>
   </header>
 
-  <!-- MAIN WORKSPACE -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <!-- TAB 1: RESUME & COVER -->
+  <main id="studio-tab-resume" class="studio-tab-panel flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-    <!-- LEFT COLUMN: UPLOAD, PERSONALIZE & FORM EDITOR -->
+    <!-- LEFT COLUMN -->
     <section class="lg:col-span-5 space-y-4">
 
       <!-- STEP 1: UPLOAD RESUME -->
@@ -91,7 +122,7 @@
             <span class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-extrabold flex items-center justify-center">1</span>
             <div>
               <h2 class="text-sm font-extrabold text-slate-900">Upload Existing Resume (PDF / DOCX)</h2>
-              <p class="text-[11px] text-slate-500">Extracts full data, detects role & builds new ATS version</p>
+              <p class="text-[11px] text-slate-500">Extracts exact data, detects role & builds new ATS version</p>
             </div>
           </div>
           <span class="text-slate-400 text-xs font-bold">▾</span>
@@ -128,7 +159,7 @@
                 New ATS Version Ready
               </span>
               <span id="detected-role-pill" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
-                Detected Role: Auto
+                Role: Auto
               </span>
             </div>
 
@@ -214,6 +245,25 @@
           <div id="education-form-list" class="space-y-2.5"></div>
         </div>
       </div>
+
+      <!-- STEP 3: COVER LETTER BUILDER -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-extrabold text-slate-900">3. Tailored Cover Letter</h2>
+          <button type="button" onclick="generateCoverLetterDraft()" class="px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-[11px] font-bold hover:bg-indigo-100 cursor-pointer">
+            ✨ Auto-Draft
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input type="text" id="cl-company" placeholder="Target Company" oninput="renderPreview()" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs" />
+          <input type="text" id="cl-role" placeholder="Target Role" oninput="renderPreview()" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs" />
+        </div>
+        <textarea id="cl-body" rows="5" placeholder="Write or auto-draft your cover letter..." oninput="renderPreview()" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs"></textarea>
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+          <input type="checkbox" id="cl-include-in-preview" onchange="renderPreview()" class="rounded" />
+          Show Cover Letter below Resume preview
+        </label>
+      </div>
     </section>
 
     <!-- RIGHT COLUMN: LIVE ATS RESUME PREVIEW -->
@@ -222,43 +272,119 @@
         <span id="preview-mode-badge" class="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
           ✨ Viewing: New ATS-Friendly Version
         </span>
-        <span>Clean 1–2 Page ATS Layout</span>
+
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <select id="template-select" onchange="applyTemplateStyle(this.value)" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700">
+            <option value="classic">Classic ATS</option>
+            <option value="minimalist">Minimalist</option>
+            <option value="corporate">Corporate</option>
+          </select>
+          <button type="button" id="btn-mode-1pg" onclick="setPageDensity('compact-2pg')" class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-bold cursor-pointer">
+            Compact (1–2 Pg)
+          </button>
+          <button type="button" id="btn-mode-std" onclick="setPageDensity('')" class="px-2.5 py-1 rounded-lg bg-white text-slate-700 border border-slate-200 text-[11px] font-bold cursor-pointer">
+            Standard
+          </button>
+        </div>
       </div>
 
-      <article id="resume-print-area" class="resume-paper rounded-2xl border border-slate-200 p-7 sm:p-10 space-y-5">
-        <!-- Header -->
-        <div class="border-b-2 border-slate-900 pb-3.5">
+      <article id="resume-print-area" class="resume-paper compact-2pg rounded-2xl border border-slate-200 p-7 sm:p-10 space-y-4">
+        <div class="resume-header-box border-b-2 border-slate-900 pb-3">
           <h2 id="prev-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Your Name</h2>
           <p id="prev-headline" class="text-sm font-bold text-indigo-700 mt-0.5"></p>
-          <p id="prev-contact" class="text-xs text-slate-600 mt-1.5"></p>
+          <p id="prev-contact" class="text-xs text-slate-600 mt-1"></p>
         </div>
 
-        <!-- Summary -->
         <div id="prev-summary-block" class="space-y-1">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Professional Summary</h3>
+          <h3 class="resume-heading text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Professional Summary</h3>
           <p id="prev-summary" class="text-xs sm:text-[13px] text-slate-700 leading-relaxed"></p>
         </div>
 
-        <!-- Skills -->
         <div id="prev-skills-block" class="space-y-1">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Core Skills</h3>
+          <h3 class="resume-heading text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Core Skills</h3>
           <p id="prev-skills" class="text-xs sm:text-[13px] text-slate-700 leading-relaxed"></p>
         </div>
 
-        <!-- Experience -->
-        <div id="prev-exp-block" class="space-y-3">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Professional Experience</h3>
-          <div id="prev-experience-list" class="space-y-3.5"></div>
+        <div id="prev-exp-block" class="space-y-2.5">
+          <h3 class="resume-heading text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Professional Experience</h3>
+          <div id="prev-experience-list" class="space-y-3"></div>
         </div>
 
-        <!-- Education -->
-        <div id="prev-edu-block" class="space-y-2">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Education</h3>
+        <div id="prev-edu-block" class="space-y-1.5">
+          <h3 class="resume-heading text-xs font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Education</h3>
           <div id="prev-education-list" class="space-y-1.5"></div>
+        </div>
+
+        <div id="prev-cl-block" class="hidden pt-4 border-t border-dashed border-slate-300 space-y-1.5">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900">Cover Letter</h3>
+          <p id="prev-cl-text" class="text-xs sm:text-[13px] text-slate-700 whitespace-pre-line leading-relaxed"></p>
         </div>
       </article>
     </section>
   </main>
+
+  <!-- TAB 2: JOBS & PROFILE -->
+  <section id="studio-tab-jobs" class="studio-tab-panel hidden max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-5">
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">JD Keyword Matcher & ATS Optimizer</h2>
+          <p class="text-xs text-slate-500">Paste a target Job Description to compare against your current resume skills & summary.</p>
+        </div>
+        <button type="button" onclick="analyzeJobDescription()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer">
+          Analyze JD Match
+        </button>
+      </div>
+      <textarea id="jd-input-text" rows="5" placeholder="Paste job description here..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs"></textarea>
+      <div id="jd-match-result" class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-xs text-slate-700 space-y-2">
+        <p class="font-bold text-slate-800">Paste a Job Description above and click "Analyze JD Match".</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: TRACKER & CTC -->
+  <section id="studio-tab-tracker" class="studio-tab-panel hidden max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-5">
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+      <h2 class="text-base font-extrabold text-slate-900">Job Application & CTC Tracker</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+        <input type="text" id="trk-company" placeholder="Company" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs" />
+        <input type="text" id="trk-role" placeholder="Role" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs" />
+        <input type="text" id="trk-ctc" placeholder="CTC (e.g., 8.5 LPA)" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs" />
+        <select id="trk-status" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold">
+          <option value="Applied">Applied</option>
+          <option value="Interview">Interview</option>
+          <option value="Offer">Offer</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+      <button type="button" onclick="addApplicationRow()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer">
+        + Add Application
+      </button>
+
+      <div id="applications-list" class="space-y-2 pt-2"></div>
+    </div>
+  </section>
+
+  <!-- TAB 4: PREP & PLAN -->
+  <section id="studio-tab-prep" class="studio-tab-panel hidden max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-5">
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+      <h2 class="text-base font-extrabold text-slate-900">Interview Prep & Action Checklist</h2>
+      <div id="prep-checklist-box" class="space-y-2 text-xs text-slate-700">
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+          <input type="checkbox" class="rounded" />
+          <span>Align resume headline & top 3 experience bullets with target role.</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+          <input type="checkbox" class="rounded" />
+          <span>Keep resume crisp within 1–2 ATS-friendly pages before exporting PDF.</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+          <input type="checkbox" class="rounded" />
+          <span>Prepare 2 quantified impact stories (metrics, tools used, business outcome).</span>
+        </label>
+      </div>
+    </div>
+  </section>
 
   <!-- TOAST -->
   <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-lg"></div>
@@ -268,7 +394,7 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    const STORAGE_KEY = 'dhanisha_career_studio_v2';
+    const STORAGE_KEY = 'dhanisha_career_studio_full_v1';
 
     const BUILTIN_ROLES = [
       { id: 'auto', name: 'Auto-Detected Role', headline: 'Experienced Professional' },
@@ -297,11 +423,15 @@
     }
 
     let state = {
+      activeTab: 'resume',
       activeRoleId: 'auto',
       customRoles: [],
       resume: createEmptyResume(),
       oldExtractedResume: null,
-      newAtsResume: null
+      newAtsResume: null,
+      activeVersion: 'new',
+      applications: [],
+      coverLetter: { company: '', role: '', body: '', show: false }
     };
 
     function showToast(msg) {
@@ -324,9 +454,29 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          state = { ...state, ...parsed, resume: { ...createEmptyResume(), ...(parsed.resume || {}) } };
+          state = {
+            ...state,
+            ...parsed,
+            resume: { ...createEmptyResume(), ...(parsed.resume || {}) },
+            coverLetter: { ...state.coverLetter, ...(parsed.coverLetter || {}) },
+            applications: Array.isArray(parsed.applications) ? parsed.applications : []
+          };
         }
       } catch (e) {}
+    }
+
+    function switchStudioTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.studio-tab-panel').forEach(el => {
+        el.classList.toggle('hidden', el.id !== `studio-tab-${tabName}`);
+      });
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => {
+        const active = btn.dataset.studioTab === tabName;
+        btn.className = active
+          ? 'studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white cursor-pointer shrink-0'
+          : 'studio-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer shrink-0';
+      });
+      saveState();
     }
 
     function getAllRoles() {
@@ -382,6 +532,34 @@
       if (el) el.classList.toggle('hidden');
     }
 
+    function applyTemplateStyle(tpl) {
+      const paper = document.getElementById('resume-print-area');
+      if (!paper) return;
+      paper.classList.remove('tpl-minimalist', 'tpl-corporate');
+      if (tpl === 'minimalist') paper.classList.add('tpl-minimalist');
+      if (tpl === 'corporate') paper.classList.add('tpl-corporate');
+    }
+
+    function setPageDensity(cls) {
+      const paper = document.getElementById('resume-print-area');
+      const b1 = document.getElementById('btn-mode-1pg');
+      const b2 = document.getElementById('btn-mode-std');
+      if (!paper) return;
+      if (cls) {
+        paper.classList.add('compact-2pg');
+        b1?.classList.replace('bg-white', 'bg-slate-900');
+        b1?.classList.replace('text-slate-700', 'text-white');
+        b2?.classList.replace('bg-slate-900', 'bg-white');
+        b2?.classList.replace('text-white', 'text-slate-700');
+      } else {
+        paper.classList.remove('compact-2pg');
+        b2?.classList.replace('bg-white', 'bg-slate-900');
+        b2?.classList.replace('text-slate-700', 'text-white');
+        b1?.classList.replace('bg-slate-900', 'bg-white');
+        b1?.classList.replace('text-white', 'text-slate-700');
+      }
+    }
+
     // =========================================================================
     // FILE EXTRACTION (PDF + DOCX + TXT)
     // =========================================================================
@@ -428,7 +606,7 @@
         if (statusEl) {
           statusEl.textContent = `Parsed "${file.name}" → ${extractedSummary.join(', ')}`;
         }
-        showToast('Resume parsed & New ATS Version created!');
+        showToast('Old Resume extracted & New ATS Version ready!');
       } catch (err) {
         console.error(err);
         if (statusEl) statusEl.textContent = 'Could not read file cleanly. Try another PDF/DOCX.';
@@ -449,7 +627,7 @@
     function polishBulletForATS(rawLine, index = 0) {
       let clean = String(rawLine || '').replace(/^[•\-*▪●◦▸►\s]+/, '').trim();
       if (!clean) return '';
-      if (isPureDateOrYearLine(clean) || /^(?:19|20)\d{2}\.?$/.test(clean) || clean.length < 12) return '';
+      if (isPureDateOrYearLine(clean) || /^(?:19|20)\d{2}\.?$/.test(clean) || clean.length < 10) return '';
       clean = clean.replace(/\b(Led|Built|Drove|Improved)\s+(.+?)\s+\1\s+/i, '$1 ');
 
       const strongVerbs = ['Led', 'Built', 'Drove', 'Improved', 'Streamlined', 'Managed', 'Delivered', 'Executed'];
@@ -507,8 +685,13 @@
         res.skills = uniqSkills.slice(0, 15).join(', ');
       }
 
-      if (Array.isArray(res.education) && res.education.length > 2) {
-        res.education = res.education.slice(0, 2);
+      if (Array.isArray(res.education)) {
+        res.education = res.education
+          .filter(ed => {
+            const txt = `${ed.degree || ''} ${ed.school || ''}`.toLowerCase();
+            return /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|school|institute|iit|nit|xii|xth|12th|10th)\b/i.test(txt);
+          })
+          .slice(0, 2);
       }
 
       return res;
@@ -581,7 +764,6 @@
     }
 
     function parseStructuredResumeLines(lines) {
-      // Clear any previous sample/state data so uploaded resume is clean
       state.resume = createEmptyResume();
 
       const cleanedLines = lines
@@ -694,7 +876,7 @@
         }
       }
 
-      const eduStrictRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|institute|iit|nit|xii|xth|12th|10th)\b/i;
+      const eduStrictRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|school|institute|iit|nit|xii|xth|12th|10th)\b/i;
       buckets.education = buckets.education.filter(l => eduStrictRe.test(l) && !isPureDateOrYearLine(l));
       if (!buckets.education.length) {
         buckets.education = cleanedLines.filter(l => eduStrictRe.test(l) && !isPureDateOrYearLine(l) && l.length < 150).slice(0, 2);
@@ -837,15 +1019,14 @@
         found.push('Education');
       }
 
-      // Save Old Extracted snapshot
       state.oldExtractedResume = JSON.parse(JSON.stringify(state.resume));
 
-      // Build New ATS-Friendly snapshot + Auto Role Detection
       buildATSFriendlyResumeFromParsed(state.resume);
       const detectedRole = inferRoleFromParsedResume(state.resume);
       if (detectedRole) found.push(`Role: ${detectedRole}`);
 
       state.newAtsResume = JSON.parse(JSON.stringify(state.resume));
+      state.activeVersion = 'new';
 
       const accBody1 = document.getElementById('acc-body-1');
       if (accBody1) accBody1.classList.remove('hidden');
@@ -863,6 +1044,7 @@
     }
 
     function switchResumeVersionView(mode) {
+      state.activeVersion = mode;
       if (mode === 'old' && state.oldExtractedResume) {
         state.resume = JSON.parse(JSON.stringify(state.oldExtractedResume));
       } else if (mode === 'new' && state.newAtsResume) {
@@ -938,6 +1120,7 @@
 
       buildATSFriendlyResumeFromParsed(state.resume);
       state.newAtsResume = JSON.parse(JSON.stringify(state.resume));
+      state.activeVersion = 'new';
       updateVersionToggleUI('new');
       saveState();
       populateResumeForm();
@@ -952,7 +1135,7 @@
     }
 
     // =========================================================================
-    // FORM SYNC & LIVE PREVIEW
+    // FORM SYNC, COVER LETTER, JD MATCHER, TRACKER & PREVIEW
     // =========================================================================
     function populateResumeForm() {
       const r = state.resume;
@@ -965,8 +1148,14 @@
       document.getElementById('res-summary').value = r.summary || '';
       document.getElementById('res-skills').value = r.skills || '';
 
+      document.getElementById('cl-company').value = state.coverLetter?.company || '';
+      document.getElementById('cl-role').value = state.coverLetter?.role || '';
+      document.getElementById('cl-body').value = state.coverLetter?.body || '';
+      document.getElementById('cl-include-in-preview').checked = !!state.coverLetter?.show;
+
       renderExperienceForm();
       renderEducationForm();
+      renderApplicationsList();
     }
 
     function syncFormToResume() {
@@ -1066,6 +1255,86 @@
       renderPreview();
     }
 
+    function generateCoverLetterDraft() {
+      const comp = (document.getElementById('cl-company')?.value || 'your organization').trim();
+      const role = (document.getElementById('cl-role')?.value || state.resume.headline || 'this role').trim();
+      const name = (state.resume.name || 'Candidate').trim();
+      const skills = (state.resume.skills || 'relevant domain skills').trim();
+      const draft = `Dear Hiring Manager,\n\nI am writing to express my strong interest in the ${role} position at ${comp}. With practical experience in ${skills}, I bring a structured approach to execution, problem-solving, and delivering measurable outcomes.\n\nIn my recent experience, I have focused on improving workflow efficiency, collaborating with cross-functional teams, and maintaining high quality standards. I would welcome the opportunity to discuss how my background aligns with ${comp}'s goals.\n\nSincerely,\n${name}`;
+      document.getElementById('cl-body').value = draft;
+      document.getElementById('cl-include-in-preview').checked = true;
+      renderPreview();
+      showToast('Cover letter drafted!');
+    }
+
+    function analyzeJobDescription() {
+      const jd = (document.getElementById('jd-input-text')?.value || '').toLowerCase();
+      const resBlob = `${state.resume.headline || ''} ${state.resume.skills || ''} ${state.resume.summary || ''} ${(state.resume.experience || []).map(e => `${e.role || ''} ${e.bullets || ''}`).join(' ')}`.toLowerCase();
+      const resultBox = document.getElementById('jd-match-result');
+      if (!jd.trim()) {
+        resultBox.innerHTML = '<p class="text-rose-600 font-bold">Please paste a job description first.</p>';
+        return;
+      }
+      const words = [...new Set(jd.match(/\b[a-z][a-z0-9+#.-]{2,}\b/g) || [])]
+        .filter(w => !['the', 'and', 'for', 'with', 'that', 'this', 'from', 'your', 'will', 'have', 'are', 'role', 'work', 'team', 'experience', 'years', 'year', 'ability', 'strong', 'good'].includes(w))
+        .slice(0, 20);
+      const matched = words.filter(w => resBlob.includes(w));
+      const missing = words.filter(w => !resBlob.includes(w));
+      const pct = words.length ? Math.round((matched.length / words.length) * 100) : 0;
+      resultBox.innerHTML = `
+        <p class="font-extrabold text-slate-900">Keyword Match Score: ${pct}% (${matched.length}/${words.length})</p>
+        <p><span class="font-bold text-emerald-700">Matched:</span> ${matched.join(', ') || 'None'}</p>
+        <p><span class="font-bold text-amber-700">Consider Adding:</span> ${missing.slice(0, 10).join(', ') || 'Great coverage'}</p>
+      `;
+    }
+
+    function addApplicationRow() {
+      const company = (document.getElementById('trk-company')?.value || '').trim();
+      const role = (document.getElementById('trk-role')?.value || '').trim();
+      const ctc = (document.getElementById('trk-ctc')?.value || '').trim();
+      const status = document.getElementById('trk-status')?.value || 'Applied';
+      if (!company && !role) {
+        showToast('Enter company or role first.');
+        return;
+      }
+      state.applications.unshift({ id: Date.now(), company, role, ctc, status });
+      document.getElementById('trk-company').value = '';
+      document.getElementById('trk-role').value = '';
+      document.getElementById('trk-ctc').value = '';
+      saveState();
+      renderApplicationsList();
+      showToast('Application added to tracker!');
+    }
+
+    function removeApplicationRow(id) {
+      state.applications = (state.applications || []).filter(a => a.id !== id);
+      saveState();
+      renderApplicationsList();
+    }
+
+    function renderApplicationsList() {
+      const box = document.getElementById('applications-list');
+      if (!box) return;
+      const items = state.applications || [];
+      if (!items.length) {
+        box.innerHTML = '<p class="text-xs text-slate-400">No applications tracked yet.</p>';
+        return;
+      }
+      box.innerHTML = items.map(a => `
+        <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="font-extrabold text-slate-900">${escapeHtml(a.company || 'Company')}</span>
+            <span class="text-slate-500"> • ${escapeHtml(a.role || 'Role')}</span>
+            ${a.ctc ? `<span class="ml-2 font-bold text-indigo-700">${escapeHtml(a.ctc)}</span>` : ''}
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px]">${escapeHtml(a.status)}</span>
+            <button type="button" onclick="removeApplicationRow(${a.id})" class="text-rose-600 font-bold hover:underline cursor-pointer">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
     function renderPreview() {
       const r = state.resume;
       document.getElementById('prev-name').textContent = r.name || 'Your Name';
@@ -1119,19 +1388,35 @@
           ${ed.year ? `<span class="text-xs font-semibold text-slate-500">${escapeHtml(ed.year)}</span>` : ''}
         </div>
       `).join('');
+
+      const clCompany = document.getElementById('cl-company')?.value || '';
+      const clRole = document.getElementById('cl-role')?.value || '';
+      const clBody = document.getElementById('cl-body')?.value || '';
+      const clShow = !!document.getElementById('cl-include-in-preview')?.checked;
+      state.coverLetter = { company: clCompany, role: clRole, body: clBody, show: clShow };
+      saveState();
+
+      const clBlock = document.getElementById('prev-cl-block');
+      document.getElementById('prev-cl-text').textContent = clBody;
+      clBlock.classList.toggle('hidden', !(clShow && clBody.trim()));
     }
 
     function resetDemoState() {
       localStorage.removeItem(STORAGE_KEY);
       state = {
+        activeTab: 'resume',
         activeRoleId: 'auto',
         customRoles: [],
         resume: createEmptyResume(),
         oldExtractedResume: null,
-        newAtsResume: null
+        newAtsResume: null,
+        activeVersion: 'new',
+        applications: [],
+        coverLetter: { company: '', role: '', body: '', show: false }
       };
       const panel = document.getElementById('parsed-personalize-panel');
       if (panel) panel.classList.add('hidden');
+      switchStudioTab('resume');
       renderRoleSelector();
       populateResumeForm();
       renderPreview();
@@ -1150,12 +1435,14 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
+      switchStudioTab(state.activeTab || 'resume');
       renderRoleSelector();
       populateResumeForm();
       renderPreview();
       if (state.oldExtractedResume || state.newAtsResume) {
         const panel = document.getElementById('parsed-personalize-panel');
         if (panel) panel.classList.remove('hidden');
+        updateVersionToggleUI(state.activeVersion || 'new');
       }
     });
   </script>
