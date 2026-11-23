@@ -201,6 +201,21 @@
       </span>
     </div>
     <span id="parsed-found-count" class="text-[11px] font-bold text-indigo-800"></span>
+  <p class="text-[11px] text-slate-600 leading-relaxed">
+    Purane resume ka data nikaal kar naya ATS-friendly draft bana diya hai. Agar kuch aur add karna hai toh neeche daal kar <strong>Apply to New ATS Resume</strong> dabao:
+  </p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <input type="text" id="perso-title" placeholder="New Target Title (e.g., Sales Lead)" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+    <input type="text" id="perso-company" placeholder="Add Company / Role (e.g., Acme Corp)" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+  </div>
+  <input type="text" id="perso-skills" placeholder="Add Extra Skills (comma-separated, e.g., Excel, CRM, Negotiation)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs" />
+  <textarea id="perso-extra-note" rows="2" placeholder="Add custom point, achievement, or note for your new ATS resume..." class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs"></textarea>
+
+  <div class="flex flex-wrap justify-end gap-2">
+    <button type="button" onclick="applyPersonalizedAddons()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition cursor-pointer">
+      ✨ Apply to New ATS Resume
+    </button>
   </div>
 
   <p class="text-[11px] text-slate-600 leading-relaxed">
