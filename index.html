@@ -1462,90 +1462,227 @@
       }
     }
 
+  function trimResumeToTwoPages(res) {
+      // Keep top 3 roles and up to 4 crisp bullets per role so it fits cleanly in 1-2 ATS pages
+      if (Array.isArray(res.experience)) {
+        res.experience = res.experience.slice(0, 3).map(exp => {
+          const bLines = (exp.bullets || '')
+            .split('\n')
+            .map(b => b.replace(/^[•\-*▪●◦▪▸►]+\s*/, '').trim())
+            .filter(Boolean)
+            .slice(0, 4);
+          return { ...exp, bullets: bLines.join('\n') };
+        });
+      }
+      // Keep top 14 skills crisp
+      if (typeof res.skills === 'string' && res.skills.trim()) {
+        const sList = res.skills
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .slice(0, 14);
+        res.skills = sList.join(', ');
+      }
+      // Keep summary crisp (max ~420 chars)
+      if (typeof res.summary === 'string' && res.summary.length > 420) {
+        res.summary = res.summary.slice(0, 417).trim() + '...';
+      }
+      // Keep top 2 education entries
+      if (Array.isArray(res.education)) {
+        res.education = res.education.slice(0, 2);
+      }
+      return res;
+    }
+
     function parseStructuredResumeLines(lines) {
-      const fullText = lines.join('\n');
+      const cleanedLines = lines
+        .map(l => String(l || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const fullText = cleanedLines.join('\n');
       const found = [];
 
+      // 1. Contact Info
       const emailM = fullText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-      const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d{10,12}/);
-      const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
-      if (emailM) { state.resume.email = emailM[0]; found.push('Email'); }
-      if (phoneM) { state.resume.phone = phoneM[0]; found.push('Phone'); }
-      if (liM) { state.resume.linkedin = liM[0]; found.push('LinkedIn'); }
+      const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d[\d\s-]{8,13}\d/);
+      const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_.-]+/i);
+      const ghM = fullText.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_.-]+/i);
 
-      const indianCities = ['Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Gurgaon', 'Gurugram', 'Bengaluru', 'Bangalore', 'Mumbai', 'Pune', 'Hyderabad', 'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh'];
-      const cityM = indianCities.find(c => new RegExp(`\\b${c}\\b`, 'i').test(fullText));
+      if (emailM) { state.resume.email = emailM[0].trim(); found.push('Email'); }
+      if (phoneM) { state.resume.phone = phoneM[0].trim(); found.push('Phone'); }
+      if (liM) { state.resume.linkedin = liM[0].trim(); found.push('LinkedIn'); }
+      if (ghM) { state.resume.portfolio = ghM[0].trim(); found.push('Portfolio'); }
+
+      const indianCities = [
+        'Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Greater Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad',
+        'Bengaluru', 'Bangalore', 'Mumbai', 'Navi Mumbai', 'Thane', 'Pune', 'Hyderabad', 'Chennai',
+        'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh', 'Indore', 'Kochi', 'Lucknow'
+      ];
+      const cityM = indianCities.find(c => new RegExp(`\\b${c.replace(/\s+/g, '\\s+')}\\b`, 'i').test(fullText));
       if (cityM) { state.resume.location = cityM; found.push('Location'); }
 
-      const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact)$/i;
-      const topName = lines.slice(0, 8).find(l =>
-        l.length >= 3 && l.length <= 42 &&
-        !l.includes('@') && !/\d{5}/.test(l) && !/linkedin|github|http/i.test(l) &&
-        !headerBlacklist.test(l.trim()) && /^[A-Za-z\s.'-]+$/.test(l.trim())
+      // 2. Full Name
+      const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact|projects|certifications)$/i;
+      const topName = cleanedLines.slice(0, 10).find(l =>
+        l.length >= 3 && l.length <= 45 &&
+        !l.includes('@') && !/\d{4}/.test(l) && !/linkedin|github|http|www\.|@/i.test(l) &&
+        !headerBlacklist.test(l.trim()) && /^[A-Za-z][A-Za-z\s.'-]{1,42}$/.test(l.trim())
       );
       if (topName) { state.resume.name = topName.trim(); found.push('Name'); }
 
-      const sectionMatchers = {
-        summary: /^(professional\s+)?(summary|profile|objective|about\s+me)\s*:?$/i,
-        skills: /^(core\s+|key\s+|technical\s+)?(skills|competencies|expertise|technologies)\s*:?$/i,
-        experience: /^(work\s+|professional\s+)?(experience|employment|career\s+history|work\s+history)\s*:?$/i,
-        education: /^(education|academic\s+background|qualifications)\s*:?$/i,
-        other: /^(certifications|projects|awards|languages|interests|declarations|references)\s*:?$/i
+      // 3. Flexible Section Detection
+      const isHeadingLine = (line) => {
+        if (line.length > 55 || /@|http|\d{2,}/.test(line)) return false;
+        const norm = line.replace(/[:\-–—|•]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (!norm || norm.split(' ').length > 5) return false;
+
+        if (/\b(summary|profile|objective|about)\b/.test(norm) && !/\b(experience|education|skill)\b/.test(norm)) {
+          return 'summary';
+        }
+        if (/\b(skill|competenc|tool|technolog|stack|expertise|proficienc)\b/.test(norm)) {
+          return 'skills';
+        }
+        if (/\b(experience|employment|career|work\s*history|positions\s*held|internship)\b/.test(norm)) {
+          return 'experience';
+        }
+        if (/\b(education|academic|qualification|degree|university|college|schooling)\b/.test(norm)) {
+          return 'education';
+        }
+        if (/\b(certification|certificate|award|achievement|language|hobby|hobbies|interest|declaration|reference|project)\b/.test(norm)) {
+          return 'other';
+        }
+        return null;
       };
 
       const buckets = { summary: [], skills: [], experience: [], education: [] };
       let currentSec = null;
 
-      lines.forEach(line => {
-        const clean = line.replace(/[:\-–—]+$/, '').trim();
-        let matchedSec = null;
-        for (const [sec, re] of Object.entries(sectionMatchers)) {
-          if (re.test(clean)) { matchedSec = sec; break; }
+      cleanedLines.forEach((line, idx) => {
+        const secHit = isHeadingLine(line);
+        if (secHit) {
+          currentSec = secHit === 'other' ? null : secHit;
+          return;
         }
-        if (matchedSec) {
-          currentSec = matchedSec === 'other' ? null : matchedSec;
-        } else if (currentSec && buckets[currentSec]) {
+        if (currentSec && buckets[currentSec]) {
           buckets[currentSec].push(line);
+        } else if (idx < 6 && !currentSec && line.length > 45 && !line.includes('@')) {
+          // Top intro paragraph if no explicit summary heading
+          buckets.summary.push(line);
         }
       });
 
+      // Fallback 1: If no explicit Skills bucket, look for skill-dense lines (3+ comma/pipe/bullet separated items)
+      if (!buckets.skills.length) {
+        const skillCandidates = cleanedLines.filter(l => {
+          if (l.length < 12 || l.length > 260 || /@|http|https|\b20\d{2}\b/i.test(l)) return false;
+          const seps = (l.match(/[,|•/]/g) || []).length;
+          return seps >= 3 && !/\b(university|college|school|pvt|ltd|limited|inc\.|corp)\b/i.test(l);
+        });
+        if (skillCandidates.length) {
+          buckets.skills.push(...skillCandidates.slice(0, 3));
+        }
+      }
+
+      // Fallback 2: If no explicit Experience bucket, gather lines containing date ranges + nearby bullets
+      if (!buckets.experience.length) {
+        const dateAnyRe = /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|till\s*date|\b(?:19|20)\d{2}\b)/i;
+        for (let i = 0; i < cleanedLines.length; i++) {
+          if (dateAnyRe.test(cleanedLines[i])) {
+            buckets.experience.push(cleanedLines[i]);
+            for (let j = i + 1; j <= Math.min(cleanedLines.length - 1, i + 5); j++) {
+              if (dateAnyRe.test(cleanedLines[j]) || isHeadingLine(cleanedLines[j])) break;
+              buckets.experience.push(cleanedLines[j]);
+            }
+          }
+        }
+      }
+
+      // Fallback 3: If no explicit Education bucket, catch degree/college lines
+      if (!buckets.education.length) {
+        const eduRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|institute|iit|nit)\b/i;
+        buckets.education = cleanedLines.filter(l => eduRe.test(l) && l.length < 150).slice(0, 3);
+      }
+
+      // Apply Summary
       if (buckets.summary.length) {
-        state.resume.summary = buckets.summary.join(' ').slice(0, 700);
+        state.resume.summary = buckets.summary.join(' ').trim();
         found.push('Summary');
       }
 
+      // Apply Skills
       if (buckets.skills.length) {
-        state.resume.skills = buckets.skills.join(', ').replace(/[•|▪●]/g, ',').replace(/,\s*,+/g, ', ').replace(/^,|,$/g, '').trim();
-        found.push('Skills');
+        const rawSkills = buckets.skills
+          .join(', ')
+          .replace(/^[a-z\s/&]+:\s*/i, '')
+          .replace(/[•|▪●◦/]+/g, ', ')
+          .replace(/,\s*,+/g, ', ')
+          .replace(/^[\s,]+|[\s,]+$/g, '')
+          .trim();
+        if (rawSkills) {
+          state.resume.skills = rawSkills;
+          found.push('Skills');
+        }
       }
 
+      // Apply Experience
       if (buckets.experience.length) {
-        const dateRe = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\b20\d{2}\b|\b19\d{2}\b).*(?:Present|Current|20\d{2}|19\d{2})/i;
+        const dateRe = /(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|now|till\s*date|\b(?:19|20)\d{2}\b)/i;
+        const companyHintRe = /\b(pvt\.?\s*ltd\.?|ltd\.?|limited|inc\.?|llp|corp\.?|corporation|technologies|solutions|services|systems|global|india|group|enterprises|consultancy|studio|labs)\b/i;
         const parsedExps = [];
         let cur = null;
+
         buckets.experience.forEach(line => {
-          const isBullet = /^[•\-*▪●]/.test(line);
+          const isBullet = /^[•\-*▪●◦▸►]/.test(line);
           const hasDate = dateRe.test(line);
-          if (!isBullet && hasDate && line.length < 110) {
+
+          if (!isBullet && hasDate && line.length < 130) {
             if (cur) parsedExps.push(cur);
             const dateMatch = line.match(dateRe);
             const duration = dateMatch ? dateMatch[0].trim() : '';
-            const rest = line.replace(duration, '').replace(/[|\-–—]+$/, '').trim();
-            const parts = rest.split(/\s*[–—|\-,]\s*/).filter(Boolean);
+            const rest = line.replace(duration, '').replace(/[|•\-–—,]+$/, '').trim();
+            const parts = rest.split(/\s*(?:[–—|•]|\s+at\s+|\s*-\s*)\s*/i).map(p => p.trim()).filter(Boolean);
+
+            let role = parts[0] || 'Role';
+            let company = parts[1] || '';
+            if (parts.length === 1 && companyHintRe.test(parts[0])) {
+              company = parts[0];
+              role = state.resume.headline || 'Professional Role';
+            }
+
             cur = {
               id: Date.now() + parsedExps.length,
-              role: parts[0] || rest || 'Role',
-              company: parts[1] || '',
+              role,
+              company,
               duration,
               location: '',
               bullets: ''
             };
+          } else if (!isBullet && !cur && companyHintRe.test(line) && line.length < 100) {
+            cur = {
+              id: Date.now() + parsedExps.length,
+              role: state.resume.headline || 'Role',
+              company: line,
+              duration: '',
+              location: '',
+              bullets: ''
+            };
           } else {
-            if (!cur) cur = { id: Date.now(), role: state.resume.headline || 'Experience', company: '', duration: '', location: '', bullets: '' };
-            const cleanB = line.replace(/^[•\-*▪●]\s*/, '').trim();
-            cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+            if (!cur) {
+              cur = {
+                id: Date.now() + parsedExps.length,
+                role: state.resume.headline || 'Experience',
+                company: '',
+                duration: '',
+                location: '',
+                bullets: ''
+              };
+            }
+            const cleanB = line.replace(/^[•\-*▪●◦▸►]+\s*/, '').trim();
+            if (cleanB) {
+              cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+            }
           }
         });
+
         if (cur) parsedExps.push(cur);
         if (parsedExps.length) {
           state.resume.experience = parsedExps;
@@ -1553,15 +1690,28 @@
         }
       }
 
+      // Apply Education
       if (buckets.education.length) {
-        state.resume.education = buckets.education.slice(0, 3).map((l, i) => {
-          const yr = (l.match(/\b(19|20)\d{2}(?:\s*[-–]\s*(?:20\d{2}|Present))?\b/) || [''])[0];
-          const rest = l.replace(yr, '').replace(/[,|\-–]+$/, '').trim();
-          const parts = rest.split(/\s*[,|\-–]\s*/);
-          return { id: Date.now() + 50 + i, degree: parts[0] || rest, school: parts.slice(1).join(', '), year: yr };
+        const parsedEdu = buckets.education.slice(0, 3).map((l, i) => {
+          const yrMatch = l.match(/\b(?:19|20)\d{2}(?:\s*[-–]\s*(?:(?:19|20)\d{2}|present|current))?\b/i);
+          const yr = yrMatch ? yrMatch[0].trim() : '';
+          const rest = l.replace(yr, '').replace(/[,|\-–•]+$/, '').trim();
+          const parts = rest.split(/\s*[,|\-–•]\s*/).map(p => p.trim()).filter(Boolean);
+          return {
+            id: Date.now() + 50 + i,
+            degree: parts[0] || rest,
+            school: parts.slice(1).join(', '),
+            year: yr
+          };
         });
-        found.push('Education');
+        if (parsedEdu.length) {
+          state.resume.education = parsedEdu;
+          found.push('Education');
+        }
       }
+
+      // Trim to clean 1-2 page ATS resume
+      trimResumeToTwoPages(state.resume);
 
       saveState();
       populateResumeForm();
