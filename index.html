@@ -185,6 +185,13 @@
               <!-- OLD VS NEW ATS BANNER + PERSONALIZED ADD-ON BOX -->
 <div id="parsed-personalize-panel" class="hidden rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4 space-y-3">
   <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-1.5">
+  <button type="button" id="btn-view-old-resume" onclick="switchResumeVersionView('old')" class="px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-300 text-[11px] font-bold cursor-pointer">
+    📜 Old Resume
+  </button>
+  <button type="button" id="btn-view-new-resume" onclick="switchResumeVersionView('new')" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold cursor-pointer">
+    ✨ New ATS Version
+  </button>
     <div>
       <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
         Old Resume Extracted
@@ -1674,333 +1681,540 @@ function inferRoleFromParsedResume(res) {
 
   return null;
 }
-
-function parseStructuredResumeLines(lines) {
-  const cleanedLines = lines
-    .map(l => String(l || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
-  const fullText = cleanedLines.join('\n');
-  const found = [];
-
-  const emailM = fullText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d[\d\s-]{8,13}\d/);
-  const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_.-]+/i);
-  const ghM = fullText.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_.-]+/i);
-
-  if (emailM) { state.resume.email = emailM[0].trim(); found.push('Email'); }
-  if (phoneM) { state.resume.phone = phoneM[0].trim(); found.push('Phone'); }
-  if (liM) { state.resume.linkedin = liM[0].trim(); found.push('LinkedIn'); }
-  if (ghM) { state.resume.portfolio = ghM[0].trim(); found.push('Portfolio'); }
-
-  const indianCities = [
-    'Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Greater Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad',
-    'Bengaluru', 'Bangalore', 'Mumbai', 'Navi Mumbai', 'Thane', 'Pune', 'Hyderabad', 'Chennai',
-    'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh', 'Indore', 'Kochi', 'Lucknow'
-  ];
-  const cityM = indianCities.find(c => new RegExp(`\\b${c.replace(/\s+/g, '\\s+')}\\b`, 'i').test(fullText));
-  if (cityM) { state.resume.location = cityM; found.push('Location'); }
-
-  const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact|projects|certifications)$/i;
-  const topNameIdx = cleanedLines.slice(0, 10).findIndex(l =>
-    l.length >= 3 && l.length <= 45 &&
-    !l.includes('@') && !/\d{4}/.test(l) && !/linkedin|github|http|www\.|@/i.test(l) &&
-    !headerBlacklist.test(l.trim()) && /^[A-Za-z][A-Za-z\s.'-]{1,42}$/.test(l.trim())
-  );
-
-  if (topNameIdx !== -1) {
-    state.resume.name = cleanedLines[topNameIdx].trim();
-    found.push('Name');
-
-    const nextTitleLine = cleanedLines.slice(topNameIdx + 1, topNameIdx + 4).find(l =>
-      l.length >= 4 && l.length <= 95 &&
-      !l.includes('@') && !/linkedin|github|http|www\.|\+91|\d{6,}/i.test(l) &&
-      !headerBlacklist.test(l.trim())
-    );
-    if (nextTitleLine) {
-      state.resume.headline = nextTitleLine.trim();
-      found.push('Title');
+function isPureDateOrYearLine(line) {
+      const t = String(line || '').trim();
+      return /^(?:\d{1,2}\s*\/\s*)?(?:19|20)\d{2}\s*(?:[-–—to]+\s*(?:(?:\d{1,2}\s*\/\s*)?(?:19|20)\d{2}|present|current|now|till\s*date))?$/i.test(t);
     }
-  }
 
-  const isHeadingLine = (line) => {
-    if (line.length > 60 || /@|http|\d{2,}/.test(line)) return false;
-    const norm = line.replace(/[:\-–—|•]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-    if (!norm || norm.split(' ').length > 5) return false;
+    function polishBulletForATS(rawLine, index = 0) {
+      let clean = String(rawLine || '').replace(/^[•\-*▪●◦▸►\s]+/, '').trim();
+      if (!clean) return '';
+      // Skip standalone years/dates or broken fragments like "2024." or "and."
+      if (isPureDateOrYearLine(clean) || /^(?:19|20)\d{2}\.?$/.test(clean) || clean.length < 12) return '';
+      // Fix double/garbled prefixes like "Led advanced Excel Modeling & Power Led data..."
+      clean = clean.replace(/\b(Led|Built|Drove|Improved)\s+(.+?)\s+\1\s+/i, '$1 ');
 
-    if (/\b(summary|profile|objective|about)\b/.test(norm) && !/\b(experience|education|skill)\b/.test(norm)) {
-      return 'summary';
+      const strongVerbs = ['Led', 'Built', 'Drove', 'Improved', 'Streamlined', 'Managed', 'Delivered', 'Executed'];
+      const firstWord = clean.split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '') || '';
+      const alreadyStrong = /^(led|built|drove|improved|streamlined|managed|delivered|executed|spearheaded|increased|reduced|launched|created|achieved|oversaw|coordinated|optimized)\b/i.test(firstWord);
+      if (alreadyStrong) {
+        return clean.charAt(0).toUpperCase() + clean.slice(1).replace(/\.?$/, '.');
+      }
+      const verb = strongVerbs[index % strongVerbs.length];
+      const rest = clean.replace(/^(responsible for|worked on|handled|helped with|assisted in|did)\s+/i, '');
+      return `${verb} ${rest.charAt(0).toLowerCase() + rest.slice(1).replace(/\.?$/, '.')}`;
     }
-    if (/\b(skill|competenc|tool|technolog|stack|expertise|proficienc)\b/.test(norm)) {
-      return 'skills';
-    }
-    if (/\b(experience|employment|career|work\s*history|positions\s*held|internship)\b/.test(norm)) {
-      return 'experience';
-    }
-    if (/\b(education|academic|qualification|degree|university|college|schooling)\b/.test(norm)) {
-      return 'education';
-    }
-    if (/\b(certification|certificate|award|achievement|language|hobby|hobbies|interest|declaration|reference|project)\b/.test(norm)) {
-      return 'other';
-    }
-    return null;
-  };
 
-  const buckets = { summary: [], skills: [], experience: [], education: [] };
-  let currentSec = null;
-
-  cleanedLines.forEach((line, idx) => {
-    const secHit = isHeadingLine(line);
-    if (secHit) {
-      currentSec = secHit === 'other' ? null : secHit;
-      return;
+    function switchResumeVersionView(mode) {
+      if (mode === 'old' && state.oldExtractedResume) {
+        state.resume = JSON.parse(JSON.stringify(state.oldExtractedResume));
+      } else if (mode === 'new' && state.newAtsResume) {
+        state.resume = JSON.parse(JSON.stringify(state.newAtsResume));
+      }
+      saveState();
+      populateResumeForm();
+      refreshOptimizerFromResume(true);
+      updateVersionToggleUI(mode);
     }
-    if (currentSec && buckets[currentSec]) {
-      buckets[currentSec].push(line);
-    } else if (idx < 7 && !currentSec && line.length > 50 && !line.includes('@')) {
-      buckets.summary.push(line);
-    }
-  });
 
-  if (!buckets.skills.length) {
-    const skillCandidates = cleanedLines.filter(l => {
-      if (l.length < 10 || l.length > 260 || /@|http|https|\b20\d{2}\b/i.test(l)) return false;
-      const seps = (l.match(/[,|•/]/g) || []).length;
-      return seps >= 2 && !/\b(university|college|school|pvt|ltd|limited|inc\.|corp)\b/i.test(l);
-    });
-    if (skillCandidates.length) buckets.skills.push(...skillCandidates.slice(0, 3));
-  }
-
-  if (!buckets.experience.length) {
-    const dateAnyRe = /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|till\s*date|\b(?:19|20)\d{2}\b)/i;
-    for (let i = 0; i < cleanedLines.length; i++) {
-      if (dateAnyRe.test(cleanedLines[i])) {
-        if (i > 0 && !isHeadingLine(cleanedLines[i - 1]) && cleanedLines[i - 1].length < 85 && !cleanedLines[i - 1].includes('@')) {
-          buckets.experience.push(cleanedLines[i - 1]);
-        }
-        buckets.experience.push(cleanedLines[i]);
-        for (let j = i + 1; j <= Math.min(cleanedLines.length - 1, i + 5); j++) {
-          if (dateAnyRe.test(cleanedLines[j]) || isHeadingLine(cleanedLines[j])) break;
-          buckets.experience.push(cleanedLines[j]);
-        }
+    function updateVersionToggleUI(activeMode = 'new') {
+      const panel = document.getElementById('parsed-personalize-panel');
+      if (panel) panel.classList.remove('hidden');
+      const oldBtn = document.getElementById('btn-view-old-resume');
+      const newBtn = document.getElementById('btn-view-new-resume');
+      if (oldBtn && newBtn) {
+        oldBtn.className = activeMode === 'old'
+          ? 'px-3 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-bold cursor-pointer'
+          : 'px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-300 text-[11px] font-bold cursor-pointer';
+        newBtn.className = activeMode === 'new'
+          ? 'px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold cursor-pointer'
+          : 'px-3 py-1 rounded-lg bg-white text-emerald-900 border border-emerald-300 text-[11px] font-bold cursor-pointer';
       }
     }
-  }
 
-  if (!buckets.education.length) {
-    const eduRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|institute|iit|nit)\b/i;
-    buckets.education = cleanedLines.filter(l => eduRe.test(l) && l.length < 150).slice(0, 3);
-  }
+    function buildATSFriendlyResumeFromParsed(res) {
+      const topRole = res.experience?.[0]?.role || '';
+      const topSkills = (res.skills || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+      if (!res.headline || /^resume\b/i.test(res.headline)) {
+        res.headline = topRole
+          ? (topSkills.length ? `${topRole} | ${topSkills.join(', ')}` : topRole)
+          : (res.headline || 'Professional');
+      }
 
-  if (buckets.summary.length) {
-    state.resume.summary = buckets.summary.join(' ').trim();
-    found.push('Summary');
-  }
+      if (!res.summary || res.summary.trim().length < 25) {
+        res.summary = `${res.headline} with proven experience delivering reliable results, cross-functional coordination, and measurable improvements.`;
+      }
 
-  if (buckets.skills.length) {
-    const rawSkills = buckets.skills
-      .join(', ')
-      .replace(/^[a-z\s/&]+:\s*/i, '')
-      .replace(/[•|▪●◦/]+/g, ', ')
-      .replace(/,\s*,+/g, ', ')
-      .replace(/^[\s,]+|[\s,]+$/g, '')
-      .trim();
-    if (rawSkills) {
-      state.resume.skills = rawSkills;
-      found.push('Skills');
+      if (Array.isArray(res.experience) && res.experience.length) {
+        res.experience = res.experience
+          .filter(exp => !isPureDateOrYearLine(exp.role) && (exp.role || exp.company || exp.bullets))
+          .slice(0, 3)
+          .map(exp => {
+            const lines = (exp.bullets || '')
+              .split('\n')
+              .map((b, i) => polishBulletForATS(b, i))
+              .filter(Boolean)
+              .slice(0, 4);
+            return {
+              ...exp,
+              role: (exp.role || res.headline || 'Role').trim(),
+              company: (exp.company || '').trim(),
+              duration: (exp.duration || '').trim(),
+              bullets: lines.join('\n')
+            };
+          });
+      }
+
+      if (typeof res.skills === 'string' && res.skills.trim()) {
+        const uniqSkills = [];
+        res.skills.split(',').forEach(s => {
+          const t = s.trim();
+          if (t && !uniqSkills.some(u => u.toLowerCase() === t.toLowerCase())) {
+            uniqSkills.push(t);
+          }
+        });
+        res.skills = uniqSkills.slice(0, 15).join(', ');
+      }
+
+      if (Array.isArray(res.education)) {
+        res.education = res.education
+          .filter(ed => {
+            const txt = `${ed.degree || ''} ${ed.school || ''}`.toLowerCase();
+            return /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|school|institute|iit|nit|xii|xth|12th|10th)\b/i.test(txt);
+          })
+          .slice(0, 2);
+      }
+
+      return res;
     }
-  }
 
-  if (buckets.experience.length) {
-    const dateRe = /(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|now|till\s*date|\b(?:19|20)\d{2}\b)/i;
-    const companyHintRe = /\b(pvt\.?\s*ltd\.?|ltd\.?|limited|inc\.?|llp|corp\.?|corporation|technologies|solutions|services|systems|global|india|group|enterprises|consultancy|studio|labs|bank|consulting)\b/i;
-    const roleHintRe = /\b(engineer|developer|manager|executive|analyst|consultant|lead|associate|intern|specialist|designer|coordinator|director|head|officer|administrator|architect)\b/i;
+    function trimResumeToTwoPages(res) {
+      return buildATSFriendlyResumeFromParsed(res);
+    }
 
-    const parsedExps = [];
-    let cur = null;
+    function inferRoleFromParsedResume(res) {
+      const expText = (res.experience || [])
+        .map(e => `${e.role || ''} ${e.company || ''} ${e.bullets || ''}`)
+        .join(' ');
+      const blob = `${res.headline || ''} ${expText} ${res.skills || ''} ${res.summary || ''}`.toLowerCase();
 
-    for (let i = 0; i < buckets.experience.length; i++) {
-      const line = buckets.experience[i];
-      const isBullet = /^[•\-*▪●◦▸►]/.test(line);
-      const hasDate = dateRe.test(line);
+      const roleRules = [
+        { id: 'swe', matchers: [/\b(software\s*engineer|full\s*stack|frontend|backend|react|node\.?js|java|python|javascript|typescript|api|microservices|kubernetes|docker|git)\b/gi] },
+        { id: 'data', matchers: [/\b(data\s*analyst|data\s*scientist|business\s*intelligence|\bbi\b|power\s*bi|tableau|sql|pandas|numpy|etl|dashboard|analytics|mis)\b/gi] },
+        { id: 'pm', matchers: [/\b(product\s*manager|prd|roadmap|agile|scrum|jira|a\/b\s*test|user\s*retention|product\s*strategy)\b/gi] },
+        { id: 'sales', matchers: [/\b(business\s*development|b2b|sales|bde|lead\s*generation|quota|revenue|crm|zoho|salesforce|client\s*acquisition|upsell|sme)\b/gi] },
+        { id: 'marketing', matchers: [/\b(digital\s*marketing|seo|sem|meta\s*ads|google\s*ads|ga4|performance\s*marketing|campaign|content|lead\s*gen|cro)\b/gi] },
+        { id: 'hr', matchers: [/\b(human\s*resources|\bhr\b|talent\s*acquisition|recruiter|recruitment|naukri|resdex|onboarding|payroll|hris)\b/gi] },
+        { id: 'finance', matchers: [/\b(accountant|accounts|finance|fp&a|tally|gst|tds|auditing|balance\s*sheet|reconciliation|bookkeeping)\b/gi] },
+        { id: 'ops', matchers: [/\b(operations|supply\s*chain|logistics|vendor|sla|\btat\b|inventory|procurement|warehouse)\b/gi] },
+        { id: 'design', matchers: [/\b(ui\/?ux|ux\s*designer|ui\s*designer|figma|wireframe|prototype|design\s*system|usability)\b/gi] },
+        { id: 'ba', matchers: [/\b(business\s*analyst|\bba\b|\bbrd\b|\bfrd\b|user\s*stories|\buat\b|requirements|process\s*mapping)\b/gi] },
+        { id: 'cs', matchers: [/\b(customer\s*success|customer\s*support|client\s*success|\bcsat\b|\bnps\b|retention|renewal|zendesk|freshdesk|escalation)\b/gi] }
+      ];
 
-      if (!isBullet && hasDate && line.length < 135) {
-        const dateMatch = line.match(dateRe);
-        const duration = dateMatch ? dateMatch[0].trim() : '';
-        const rest = line.replace(duration, '').replace(/[|•\-–—,()]+$/, '').replace(/^\s*[|•\-–—,()]+/, '').trim();
-        const parts = rest.split(/\s*(?:[–—|•]|\s+at\s+|\s*-\s*)\s*/i).map(p => p.trim()).filter(Boolean);
+      let bestId = null;
+      let bestScore = 0;
 
-        let role = '';
-        let company = '';
+      roleRules.forEach(rule => {
+        let score = 0;
+        rule.matchers.forEach(re => {
+          const hits = blob.match(re);
+          if (hits) score += hits.length;
+        });
+        if (score > bestScore) {
+          bestScore = score;
+          bestId = rule.id;
+        }
+      });
 
-        if (parts.length >= 2) {
-          if (companyHintRe.test(parts[0]) && !companyHintRe.test(parts[1])) {
-            company = parts[0];
-            role = parts.slice(1).join(' — ');
-          } else {
-            role = parts[0];
-            company = parts.slice(1).join(' — ');
+      if (bestId && bestScore >= 2) {
+        state.activeRoleId = bestId;
+        const foundRole = getAllRoles().find(r => r.id === bestId);
+        if (foundRole) {
+          if (!res.headline || res.headline.trim().length < 4) {
+            res.headline = foundRole.headline;
           }
-        } else if (parts.length === 1) {
-          if (companyHintRe.test(parts[0])) company = parts[0];
-          else role = parts[0];
+          state.radar.role = res.experience?.[0]?.role || foundRole.name;
         }
+        renderRoleSelector();
+        populateRadarInputs();
+        renderPrepModule();
+        return foundRole?.name || bestId;
+      }
 
-        const nextLine = buckets.experience[i + 1];
-        if (nextLine && !/^[•\-*▪●◦▸►]/.test(nextLine) && !dateRe.test(nextLine) && nextLine.length < 95) {
-          if (!company && companyHintRe.test(nextLine)) {
-            company = nextLine;
-            i++;
-          } else if (!role && roleHintRe.test(nextLine)) {
-            role = nextLine;
-            i++;
-          }
-        }
-
-        if (cur && !cur.bullets && (!cur.company || !cur.role)) {
-          if (!role && cur.role) role = cur.role;
-          if (!company && cur.company) company = cur.company;
-          parsedExps.pop();
-        }
-
-        if (cur) parsedExps.push(cur);
-        cur = {
-          id: Date.now() + parsedExps.length,
-          role: role || state.resume.headline || 'Role',
-          company,
-          duration,
-          location: '',
-          bullets: ''
-        };
-      } else if (!isBullet && (companyHintRe.test(line) || roleHintRe.test(line)) && line.length < 95 && (!cur || cur.bullets)) {
-        if (cur) parsedExps.push(cur);
-        const isComp = companyHintRe.test(line);
-        cur = {
-          id: Date.now() + parsedExps.length,
-          role: isComp ? '' : line,
-          company: isComp ? line : '',
-          duration: '',
-          location: '',
-          bullets: ''
-        };
-      } else {
-        if (!cur) {
-          cur = {
-            id: Date.now() + parsedExps.length,
-            role: state.resume.headline || 'Experience',
-            company: '',
-            duration: '',
-            location: '',
-            bullets: ''
-          };
-        }
-        if (!cur.company && companyHintRe.test(line) && line.length < 90) {
-          cur.company = line;
-        } else if (!cur.role && roleHintRe.test(line) && line.length < 90) {
-          cur.role = line;
+      const detectedTitle = (res.experience?.[0]?.role || res.headline || '').trim();
+      if (detectedTitle && detectedTitle.length >= 3 && detectedTitle.length <= 65 && !isPureDateOrYearLine(detectedTitle)) {
+        const existingCustom = (state.customRoles || []).find(
+          r => r.name.toLowerCase() === detectedTitle.toLowerCase()
+        );
+        if (existingCustom) {
+          state.activeRoleId = existingCustom.id;
         } else {
-          const cleanB = line.replace(/^[•\-*▪●◦▸►]+\s*/, '').trim();
-          if (cleanB) {
-            cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+          const skillsStr = res.skills || 'Domain Expertise, Problem Solving, Stakeholder Management';
+          const firstBullet = (res.experience?.[0]?.bullets || '').split('\n')[0] || `Delivered core ${detectedTitle} responsibilities with measurable impact.`;
+          const newRole = {
+            id: 'detected_' + Date.now(),
+            isCustom: true,
+            name: detectedTitle,
+            headline: res.headline || `${detectedTitle} | ${skillsStr.split(',').slice(0, 4).map(s => s.trim()).join(', ')}`,
+            skills: skillsStr,
+            achievement: firstBullet,
+            summary: res.summary || `Experienced ${detectedTitle} skilled in ${skillsStr}.`,
+            tip: `Highlight specific ${detectedTitle} outcomes and metrics in interviews.`,
+            trap: `"Walk me through your core experience as a ${detectedTitle}."`,
+            answer: firstBullet
+          };
+          state.customRoles.push(newRole);
+          state.activeRoleId = newRole.id;
+        }
+        state.radar.role = detectedTitle;
+        renderRoleSelector();
+        populateRadarInputs();
+        renderPrepModule();
+        return detectedTitle;
+      }
+
+      return null;
+    }
+
+    function parseStructuredResumeLines(lines) {
+      const cleanedLines = lines
+        .map(l => String(l || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const fullText = cleanedLines.join('\n');
+      const found = [];
+
+      const emailM = fullText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      const phoneM = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+?\d[\d\s-]{8,13}\d/);
+      const liM = fullText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_.-]+/i);
+      const ghM = fullText.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_.-]+/i);
+
+      if (emailM) { state.resume.email = emailM[0].trim(); found.push('Email'); }
+      if (phoneM) { state.resume.phone = phoneM[0].trim(); found.push('Phone'); }
+      if (liM) { state.resume.linkedin = liM[0].trim(); found.push('LinkedIn'); }
+      if (ghM) { state.resume.portfolio = ghM[0].trim(); found.push('Portfolio'); }
+
+      const indianCities = [
+        'Delhi NCR', 'New Delhi', 'Delhi', 'Noida', 'Greater Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad',
+        'Bengaluru', 'Bangalore', 'Mumbai', 'Navi Mumbai', 'Thane', 'Pune', 'Hyderabad', 'Chennai',
+        'Kolkata', 'Ahmedabad', 'Jaipur', 'Chandigarh', 'Indore', 'Kochi', 'Lucknow'
+      ];
+      const cityM = indianCities.find(c => new RegExp(`\\b${c.replace(/\s+/g, '\\s+')}\\b`, 'i').test(fullText));
+      if (cityM) { state.resume.location = cityM; found.push('Location'); }
+
+      const headerBlacklist = /^(resume|curriculum vitae|cv|summary|profile|objective|experience|skills|education|contact|projects|certifications)$/i;
+      const topNameIdx = cleanedLines.slice(0, 10).findIndex(l =>
+        l.length >= 3 && l.length <= 45 &&
+        !l.includes('@') && !/\d{4}/.test(l) && !/linkedin|github|http|www\.|@/i.test(l) &&
+        !headerBlacklist.test(l.trim()) && /^[A-Za-z][A-Za-z\s.'-]{1,42}$/.test(l.trim())
+      );
+
+      if (topNameIdx !== -1) {
+        state.resume.name = cleanedLines[topNameIdx].trim();
+        found.push('Name');
+
+        const nextTitleLine = cleanedLines.slice(topNameIdx + 1, topNameIdx + 4).find(l =>
+          l.length >= 4 && l.length <= 95 &&
+          !l.includes('@') && !/linkedin|github|http|www\.|\+91|\d{6,}/i.test(l) &&
+          !headerBlacklist.test(l.trim())
+        );
+        if (nextTitleLine) {
+          state.resume.headline = nextTitleLine.trim();
+          found.push('Title');
+        }
+      }
+
+      const isHeadingLine = (line) => {
+        if (line.length > 60 || /@|http|\d{2,}/.test(line)) return false;
+        const norm = line.replace(/[:\-–—|•]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (!norm || norm.split(' ').length > 5) return false;
+
+        if (/\b(summary|profile|objective|about)\b/.test(norm) && !/\b(experience|education|skill)\b/.test(norm)) {
+          return 'summary';
+        }
+        if (/\b(skill|competenc|tool|technolog|stack|expertise|proficienc)\b/.test(norm)) {
+          return 'skills';
+        }
+        if (/\b(experience|employment|career|work\s*history|positions\s*held|internship)\b/.test(norm)) {
+          return 'experience';
+        }
+        if (/\b(education|academic|qualification|degree|university|college|schooling)\b/.test(norm)) {
+          return 'education';
+        }
+        if (/\b(certification|certificate|award|achievement|language|hobby|hobbies|interest|declaration|reference|project)\b/.test(norm)) {
+          return 'other';
+        }
+        return null;
+      };
+
+      const buckets = { summary: [], skills: [], experience: [], education: [] };
+      let currentSec = null;
+
+      cleanedLines.forEach((line, idx) => {
+        const secHit = isHeadingLine(line);
+        if (secHit) {
+          currentSec = secHit === 'other' ? null : secHit;
+          return;
+        }
+        if (currentSec && buckets[currentSec]) {
+          buckets[currentSec].push(line);
+        } else if (idx < 7 && !currentSec && line.length > 50 && !line.includes('@')) {
+          buckets.summary.push(line);
+        }
+      });
+
+      if (!buckets.skills.length) {
+        const skillCandidates = cleanedLines.filter(l => {
+          if (l.length < 10 || l.length > 260 || /@|http|https|\b20\d{2}\b/i.test(l)) return false;
+          const seps = (l.match(/[,|•/]/g) || []).length;
+          return seps >= 2 && !/\b(university|college|school|pvt|ltd|limited|inc\.|corp)\b/i.test(l);
+        });
+        if (skillCandidates.length) buckets.skills.push(...skillCandidates.slice(0, 3));
+      }
+
+      if (!buckets.experience.length) {
+        const dateAnyRe = /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|till\s*date|\b(?:19|20)\d{2}\b)/i;
+        for (let i = 0; i < cleanedLines.length; i++) {
+          if (dateAnyRe.test(cleanedLines[i])) {
+            if (i > 0 && !isHeadingLine(cleanedLines[i - 1]) && cleanedLines[i - 1].length < 85 && !cleanedLines[i - 1].includes('@')) {
+              buckets.experience.push(cleanedLines[i - 1]);
+            }
+            buckets.experience.push(cleanedLines[i]);
+            for (let j = i + 1; j <= Math.min(cleanedLines.length - 1, i + 5); j++) {
+              if (dateAnyRe.test(cleanedLines[j]) || isHeadingLine(cleanedLines[j])) break;
+              buckets.experience.push(cleanedLines[j]);
+            }
           }
         }
       }
+
+      // Strictly filter Education lines so experience/company rows don't leak into Education
+      const eduStrictRe = /\b(b\.?tech|b\.?e\.?|b\.?sc|b\.?com|b\.?a\.?|bca|bba|m\.?tech|m\.?sc|m\.?com|mba|mca|pgdm|diploma|university|college|institute|iit|nit|xii|xth|12th|10th)\b/i;
+      buckets.education = buckets.education.filter(l => eduStrictRe.test(l) && !isPureDateOrYearLine(l));
+      if (!buckets.education.length) {
+        buckets.education = cleanedLines.filter(l => eduStrictRe.test(l) && !isPureDateOrYearLine(l) && l.length < 150).slice(0, 2);
+      }
+
+      if (buckets.summary.length) {
+        state.resume.summary = buckets.summary.join(' ').trim();
+        found.push('Summary');
+      }
+
+      if (buckets.skills.length) {
+        const rawSkills = buckets.skills
+          .join(', ')
+          .replace(/^[a-z\s/&]+:\s*/i, '')
+          .replace(/[•|▪●◦/]+/g, ', ')
+          .replace(/,\s*,+/g, ', ')
+          .replace(/^[\s,]+|[\s,]+$/g, '')
+          .trim();
+        if (rawSkills) {
+          state.resume.skills = rawSkills;
+          found.push('Skills');
+        }
+      }
+
+      if (buckets.experience.length) {
+        const dateRe = /(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\b(?:19|20)\d{2}\b).{0,25}(?:present|current|now|till\s*date|\b(?:19|20)\d{2}\b)/i;
+        const companyHintRe = /\b(pvt\.?\s*ltd\.?|ltd\.?|limited|inc\.?|llp|corp\.?|corporation|technologies|solutions|services|systems|global|india|group|enterprises|consultancy|studio|labs|bank|consulting)\b/i;
+        const roleHintRe = /\b(engineer|developer|manager|executive|analyst|consultant|lead|associate|intern|specialist|designer|coordinator|director|head|officer|administrator|architect)\b/i;
+
+        const parsedExps = [];
+        let cur = null;
+
+        for (let i = 0; i < buckets.experience.length; i++) {
+          const line = buckets.experience[i];
+          if (isPureDateOrYearLine(line)) continue;
+
+          const isBullet = /^[•\-*▪●◦▸►]/.test(line);
+          const hasDate = dateRe.test(line);
+
+          if (!isBullet && hasDate && line.length < 135) {
+            const dateMatch = line.match(dateRe);
+            const duration = dateMatch ? dateMatch[0].trim() : '';
+            const rest = line.replace(duration, '').replace(/[|•\-–—,()]+$/, '').replace(/^\s*[|•\-–—,()]+/, '').trim();
+            const parts = rest.split(/\s*(?:[–—|•]|\s+at\s+|\s*-\s*)\s*/i).map(p => p.trim()).filter(Boolean);
+
+            let role = '';
+            let company = '';
+
+            if (parts.length >= 2) {
+              if (companyHintRe.test(parts[0]) && !companyHintRe.test(parts[1])) {
+                company = parts[0];
+                role = parts.slice(1).join(' — ');
+              } else {
+                role = parts[0];
+                company = parts.slice(1).join(' — ');
+              }
+            } else if (parts.length === 1) {
+              if (companyHintRe.test(parts[0])) company = parts[0];
+              else role = parts[0];
+            }
+
+            const nextLine = buckets.experience[i + 1];
+            if (nextLine && !/^[•\-*▪●◦▸►]/.test(nextLine) && !dateRe.test(nextLine) && !isPureDateOrYearLine(nextLine) && nextLine.length < 95) {
+              if (!company && companyHintRe.test(nextLine)) {
+                company = nextLine;
+                i++;
+              } else if (!role && roleHintRe.test(nextLine)) {
+                role = nextLine;
+                i++;
+              }
+            }
+
+            if (cur && !cur.bullets && (!cur.company || !cur.role)) {
+              if (!role && cur.role) role = cur.role;
+              if (!company && cur.company) company = cur.company;
+              parsedExps.pop();
+            }
+
+            if (cur) parsedExps.push(cur);
+            cur = {
+              id: Date.now() + parsedExps.length,
+              role: role || state.resume.headline || 'Role',
+              company,
+              duration,
+              location: '',
+              bullets: ''
+            };
+          } else if (!isBullet && (companyHintRe.test(line) || roleHintRe.test(line)) && line.length < 95 && (!cur || cur.bullets)) {
+            if (cur) parsedExps.push(cur);
+            const isComp = companyHintRe.test(line);
+            cur = {
+              id: Date.now() + parsedExps.length,
+              role: isComp ? '' : line,
+              company: isComp ? line : '',
+              duration: '',
+              location: '',
+              bullets: ''
+            };
+          } else {
+            if (!cur) {
+              cur = {
+                id: Date.now() + parsedExps.length,
+                role: state.resume.headline || 'Experience',
+                company: '',
+                duration: '',
+                location: '',
+                bullets: ''
+              };
+            }
+            if (!cur.company && companyHintRe.test(line) && line.length < 90) {
+              cur.company = line;
+            } else if (!cur.role && roleHintRe.test(line) && line.length < 90) {
+              cur.role = line;
+            } else {
+              const cleanB = line.replace(/^[•\-*▪●◦▸►]+\s*/, '').trim();
+              if (cleanB && !isPureDateOrYearLine(cleanB)) {
+                cur.bullets = cur.bullets ? `${cur.bullets}\n${cleanB}` : cleanB;
+              }
+            }
+          }
+        }
+
+        if (cur) parsedExps.push(cur);
+        if (parsedExps.length) {
+          state.resume.experience = parsedExps;
+          found.push(`${parsedExps.length} Experience Role(s)`);
+        }
+      }
+
+      // Always sync Education cleanly (clear stale education if none found in new resume)
+      if (buckets.education.length) {
+        state.resume.education = buckets.education.slice(0, 2).map((l, i) => {
+          const yrMatch = l.match(/\b(?:19|20)\d{2}(?:\s*[-–]\s*(?:(?:19|20)\d{2}|present|current))?\b/i);
+          const yr = yrMatch ? yrMatch[0].trim() : '';
+          const rest = l.replace(yr, '').replace(/[,|\-–•]+$/, '').trim();
+          const parts = rest.split(/\s*[,|\-–•]\s*/).map(p => p.trim()).filter(Boolean);
+          return {
+            id: Date.now() + 50 + i,
+            degree: parts[0] || rest,
+            school: parts.slice(1).join(', '),
+            year: yr
+          };
+        });
+        found.push('Education');
+      } else {
+        state.resume.education = [];
+      }
+
+      // Save snapshot of old extracted data before building new ATS version
+      state.oldExtractedResume = JSON.parse(JSON.stringify(state.resume));
+
+      buildATSFriendlyResumeFromParsed(state.resume);
+
+      const detectedRoleName = inferRoleFromParsedResume(state.resume);
+      if (detectedRoleName) {
+        found.push(`Role: ${detectedRoleName}`);
+      }
+
+      state.newAtsResume = JSON.parse(JSON.stringify(state.resume));
+
+      const panel = document.getElementById('parsed-personalize-panel');
+      const countEl = document.getElementById('parsed-found-count');
+      if (panel) panel.classList.remove('hidden');
+      if (countEl) countEl.textContent = `Extracted: ${found.join(' • ')}`;
+      updateVersionToggleUI('new');
+
+      saveState();
+      populateResumeForm();
+      refreshOptimizerFromResume(true);
+      return found.length ? found : ['Basic Text'];
     }
 
-    if (cur) parsedExps.push(cur);
-    if (parsedExps.length) {
-      state.resume.experience = parsedExps;
-      found.push(`${parsedExps.length} Experience Role(s)`);
+    function applyPersonalizedAddons() {
+      const newTitle = (document.getElementById('perso-title')?.value || '').trim();
+      const newCompany = (document.getElementById('perso-company')?.value || '').trim();
+      const extraSkills = (document.getElementById('perso-skills')?.value || '').trim();
+      const extraNote = (document.getElementById('perso-extra-note')?.value || '').trim();
+
+      if (!newTitle && !newCompany && !extraSkills && !extraNote) {
+        showToast('Kuch add karne ke liye kam se kam ek field bharo.', 'warning');
+        return;
+      }
+
+      if (newTitle) {
+        state.resume.headline = newTitle;
+        if (state.resume.experience?.[0]) state.resume.experience[0].role = newTitle;
+      }
+
+      if (newCompany) {
+        state.resume.experience = state.resume.experience || [];
+        state.resume.experience.unshift({
+          id: Date.now(),
+          role: newTitle || state.resume.headline || 'Role',
+          company: newCompany,
+          duration: 'Recent',
+          location: state.resume.location || '',
+          bullets: extraNote ? polishBulletForATS(extraNote, 0) : 'Delivered key project deliverables and team targets on schedule.'
+        });
+      } else if (extraNote) {
+        if (state.resume.experience?.[0]) {
+          const prev = state.resume.experience[0].bullets ? state.resume.experience[0].bullets + '\n' : '';
+          state.resume.experience[0].bullets = prev + polishBulletForATS(extraNote, 1);
+        } else {
+          state.resume.summary = `${state.resume.summary || ''} ${extraNote}`.trim();
+        }
+      }
+
+      if (extraSkills) {
+        state.resume.skills = state.resume.skills ? `${state.resume.skills}, ${extraSkills}` : extraSkills;
+      }
+
+      buildATSFriendlyResumeFromParsed(state.resume);
+      state.newAtsResume = JSON.parse(JSON.stringify(state.resume));
+      updateVersionToggleUI('new');
+      saveState();
+      populateResumeForm();
+      refreshOptimizerFromResume(true);
+
+      ['perso-title', 'perso-company', 'perso-skills', 'perso-extra-note'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      showToast('✨ Personalized changes New ATS Resume mein add ho gaye!', 'success');
     }
-  }
-
-  if (buckets.education.length) {
-    const parsedEdu = buckets.education.slice(0, 3).map((l, i) => {
-      const yrMatch = l.match(/\b(?:19|20)\d{2}(?:\s*[-–]\s*(?:(?:19|20)\d{2}|present|current))?\b/i);
-      const yr = yrMatch ? yrMatch[0].trim() : '';
-      const rest = l.replace(yr, '').replace(/[,|\-–•]+$/, '').trim();
-      const parts = rest.split(/\s*[,|\-–•]\s*/).map(p => p.trim()).filter(Boolean);
-      return {
-        id: Date.now() + 50 + i,
-        degree: parts[0] || rest,
-        school: parts.slice(1).join(', '),
-        year: yr
-      };
-    });
-    if (parsedEdu.length) {
-      state.resume.education = parsedEdu;
-      found.push('Education');
-    }
-  }
-
-  buildATSFriendlyResumeFromParsed(state.resume);
-
-  const detectedRoleName = inferRoleFromParsedResume(state.resume);
-  if (detectedRoleName) {
-    found.push(`Role: ${detectedRoleName}`);
-  }
-
-  const panel = document.getElementById('parsed-personalize-panel');
-  const countEl = document.getElementById('parsed-found-count');
-  if (panel) panel.classList.remove('hidden');
-  if (countEl) countEl.textContent = `Extracted: ${found.join(' • ')}`;
-
-  saveState();
-  populateResumeForm();
-  refreshOptimizerFromResume(true);
-  return found.length ? found : ['Basic Text'];
-}
-
-function applyPersonalizedAddons() {
-  const newTitle = (document.getElementById('perso-title')?.value || '').trim();
-  const newCompany = (document.getElementById('perso-company')?.value || '').trim();
-  const extraSkills = (document.getElementById('perso-skills')?.value || '').trim();
-  const extraNote = (document.getElementById('perso-extra-note')?.value || '').trim();
-
-  if (!newTitle && !newCompany && !extraSkills && !extraNote) {
-    showToast('Kuch add karne ke liye kam se kam ek field bharo.', 'warning');
-    return;
-  }
-
-  if (newTitle) {
-    state.resume.headline = newTitle;
-    if (state.resume.experience?.[0]) state.resume.experience[0].role = newTitle;
-  }
-
-  if (newCompany) {
-    state.resume.experience = state.resume.experience || [];
-    state.resume.experience.unshift({
-      id: Date.now(),
-      role: newTitle || state.resume.headline || 'Role',
-      company: newCompany,
-      duration: 'Recent',
-      location: state.resume.location || '',
-      bullets: extraNote ? polishBulletForATS(extraNote, 0) : 'Delivered key project deliverables and team targets on schedule.'
-    });
-  } else if (extraNote) {
-    if (state.resume.experience?.[0]) {
-      const prev = state.resume.experience[0].bullets ? state.resume.experience[0].bullets + '\n' : '';
-      state.resume.experience[0].bullets = prev + polishBulletForATS(extraNote, 1);
-    } else {
-      state.resume.summary = `${state.resume.summary || ''} ${extraNote}`.trim();
-    }
-  }
-
-  if (extraSkills) {
-    state.resume.skills = state.resume.skills ? `${state.resume.skills}, ${extraSkills}` : extraSkills;
-  }
-
-  buildATSFriendlyResumeFromParsed(state.resume);
-  saveState();
-  populateResumeForm();
-  refreshOptimizerFromResume(true);
-
-  ['perso-title', 'perso-company', 'perso-skills', 'perso-extra-note'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-
-  showToast('✨ Personalized changes New ATS Resume mein add ho gaye!', 'success');
-}
     // =========================================================================
     // 7. RESUME FORM, IMPACT SUMMARY & RECRUITER BULLET ENHANCER
     // =========================================================================
